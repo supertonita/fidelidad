@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Fidelización - En Línea</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .minimal-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-radius: 16px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+
+    <header class="bg-white/80 backdrop-blur-md border-b border-slate-100 py-4 px-6 sticky top-0 z-10">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-lg font-semibold tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-star text-amber-500"></i> Sistema de Fidelización
+            </h1>
+            <div class="flex gap-3">
+                <button id="btn-nav-auth" onclick="switchView('auth')" class="px-4 py-2 text-sm font-medium rounded-full bg-slate-900 text-white hover:bg-slate-800 transition-colors">Acceso</button>
+                <button id="btn-nav-client" onclick="switchView('client')" class="hidden px-4 py-2 text-sm font-medium rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">Mi Perfil</button>
+                <button id="btn-nav-admin" onclick="switchView('admin')" class="hidden px-4 py-2 text-sm font-medium rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">Panel Admin</button>
+                <button id="btn-logout" onclick="logout()" class="hidden px-4 py-2 text-sm font-medium rounded-full text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors">Salir</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-4xl w-full mx-auto px-6 py-8">
+
+        <section id="auth-view" class="space-y-6 max-w-md mx-auto">
+            <div class="minimal-card p-8">
+                <div class="text-center mb-6">
+                    <i class="fa-solid fa-user-circle text-4xl text-indigo-600 mb-2"></i>
+                    <h3 class="text-xl font-bold text-slate-900">Ingresar al Sistema</h3>
+                    <p class="text-sm text-slate-500 mt-1">Escribe tus credenciales o datos de cliente</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Usuario o Tu Nombre</label>
+                        <input type="text" id="login-identifier" placeholder="Ej. josefrank o Frank Reyes" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Contraseña o Teléfono</label>
+                        <input type="text" id="login-secret" placeholder="Ej. 199818 o +503 1234 5678" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
+                    </div>
+                    <button onclick="handleLogin()" class="w-full py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all">Ingresar</button>
+                </div>
+            </div>
+        </section>
+        
+        <section id="client-view" class="hidden space-y-6">
+            <div class="minimal-card p-8 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                    <p class="text-sm font-medium text-slate-400 tracking-wider uppercase mb-1">Bienvenido de nuevo</p>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2" id="client-name">Invitado</h2>
+                    <p class="text-slate-500 text-sm" id="client-phone-display">Teléfono no registrado</p>
+                </div>
+                <div class="text-center md:text-right">
+                    <span class="text-sm text-slate-400 block mb-1">Puntos acumulados</span>
+                    <span class="text-5xl font-extrabold text-indigo-600" id="client-points">0</span>
+                </div>
+            </div>
+
+            <div class="minimal-card p-8">
+                <h3 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+                    <i class="fa-solid fa-qrcode text-indigo-600 bg-indigo-50 p-3 rounded-xl"></i>
+                    Escanear Código QR
+                </h3>
+                <p class="text-sm text-slate-500 mb-6">Ingresa el código para sumar tus puntos. De uso único por código.</p>
+                
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input type="text" id="qr-input" placeholder="Ingresa el código" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50/50">
+                    <button onclick="claimPoints()" class="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all shadow-sm">Canjear Código</button>
+                </div>
+            </div>
+
+            <div class="minimal-card p-8">
+                <h3 class="text-xl font-bold text-slate-900 mb-4">Canje de Recompensas</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4" id="client-rewards-container">
+                    </div>
+            </div>
+        </section>
+
+        <section id="admin-view" class="hidden space-y-6">
+            <div class="minimal-card p-8 mb-6">
+                <h3 class="text-xl font-bold text-slate-900 mb-6">Cargar Nuevo Producto Canjeable</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Nombre del Producto</label>
+                        <input type="text" id="new-product-name" placeholder="Ej. Corte Premium" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Puntos Requeridos</label>
+                        <input type="number" id="new-product-points" placeholder="Ej. 50" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="addProduct()" class="w-full px-4 py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all">Agregar Producto</button>
+                    </div>
+                </div>
+
+                <h4 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Productos Disponibles</h4>
+                <div class="divide-y divide-slate-100" id="admin-products-list">
+                    </div>
+            </div>
+
+            <div class="minimal-card p-8">
+                <h3 class="text-xl font-bold text-slate-900 mb-6">Clientes Registrados</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 text-left">
+                        <thead>
+                            <tr>
+                                <th class="pb-4 text-xs font-medium text-slate-400 tracking-wider">Nombre Cliente</th>
+                                <th class="pb-4 text-xs font-medium text-slate-400 tracking-wider">Teléfono</th>
+                                <th class="pb-4 text-xs font-medium text-slate-400 tracking-wider">Puntos</th>
+                                <th class="pb-4 text-xs font-medium text-slate-400 tracking-wider">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100" id="admin-clients-table">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-100 py-6 text-center text-xs text-slate-400">
+        <p>Sistema de Fidelización • Desarrollado para optimizar la gestión</p>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+        import { getFirestore, collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCahZbwdPB5zBR_rdxTp4RIRmUoiGkyUOk",
+            authDomain: "fidelidad-487f8.firebaseapp.com",
+            projectId: "fidelidad-487f8",
+            storageBucket: "fidelidad-487f8.firebasestorage.app",
+            messagingSenderId: "840301803243",
+            appId: "1:840301803243:web:be1612291a7765dab5b0ae",
+            measurementId: "G-0C9JYB08CV"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+
+        // Hacer las variables globales para el script HTML nativo
+        window.db = db;
+        window.SECURITY_KEY = "1234";
+        window.availableProducts = [];
+        window.registeredClients = [];
+        window.activeClient = null;
+        window.isAdminActive = false;
+
+        // Carga de Productos en tiempo real
+        onSnapshot(collection(db, "products"), (snapshot) => {
+            window.availableProducts = [];
+            snapshot.forEach((doc) => {
+                window.availableProducts.push({ id: doc.id, ...doc.data() });
+            });
+            if (window.renderProducts) {
+                window.renderProducts();
+            }
+        });
+
+        // Carga de Clientes en tiempo real
+        onSnapshot(collection(db, "clients"), (snapshot) => {
+            window.registeredClients = [];
+            snapshot.forEach((doc) => {
+                window.registeredClients.push({ id: doc.id, ...doc.data() });
+            });
+            if (window.updateClientsTable) {
+                window.updateClientsTable();
+            }
+
+            // Actualizar la vista del cliente si está navegando
+            if (window.activeClient) {
+                let found = window.registeredClients.find(c => c.phone === window.activeClient.phone);
+                if (found) {
+                    window.activeClient = found;
+                    document.getElementById('client-points').innerText = window.activeClient.points;
+                }
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            window.switchView('auth');
+        });
+
+        window.switchView = function(view) {
+            const authView = document.getElementById('auth-view');
+            const clientView = document.getElementById('client-view');
+            const adminView = document.getElementById('admin-view');
+            
+            authView.classList.add('hidden');
+            clientView.classList.add('hidden');
+            adminView.classList.add('hidden');
+
+            const btnAuth = document.getElementById('btn-nav-auth');
+            const btnClient = document.getElementById('btn-nav-client');
+            const btnAdmin = document.getElementById('btn-nav-admin');
+            const btnLogout = document.getElementById('btn-logout');
+
+            if (view === 'auth') {
+                authView.classList.remove('hidden');
+                btnAuth.classList.remove('hidden');
+                btnClient.classList.add('hidden');
+                btnAdmin.classList.add('hidden');
+                btnLogout.classList.add('hidden');
+            } else if (view === 'client') {
+                if (!window.activeClient && !window.isAdminActive) {
+                    alert('Por favor, inicie sesión primero.');
+                    window.switchView('auth');
+                    return;
+                }
+                clientView.classList.remove('hidden');
+                btnAuth.classList.add('hidden');
+                btnClient.classList.remove('hidden');
+                btnAdmin.classList.add('hidden');
+                if (window.isAdminActive) {
+                    btnAdmin.classList.remove('hidden');
+                }
+                btnLogout.classList.remove('hidden');
+            } else if (view === 'admin') {
+                if (!window.isAdminActive) {
+                    alert('Acceso no autorizado.');
+                    window.switchView('auth');
+                    return;
+                }
+                adminView.classList.remove('hidden');
+                btnAuth.classList.add('hidden');
+                btnClient.classList.remove('hidden');
+                btnAdmin.classList.remove('hidden');
+                btnLogout.classList.remove('hidden');
+            }
+        }
+
+        window.handleLogin = async function() {
+            const identifier = document.getElementById('login-identifier').value.trim();
+            const secret = document.getElementById('login-secret').value.trim();
+
+            if (!identifier || !secret) {
+                alert('Por favor, rellene todos los campos.');
+                return;
+            }
+
+            // Identificador de Administrador
+            if (identifier === "josefrank" && secret === "199818") {
+                window.isAdminActive = true;
+                window.activeClient = null;
+                alert('¡Sesión de Administrador iniciada correctamente!');
+                window.switchView('admin');
+                return;
+            }
+
+            // Verificar si el cliente existe en la base de datos
+            let client = window.registeredClients.find(c => c.phone === secret);
+
+            if (!client) {
+                const newClient = { name: identifier, phone: secret, points: 100 };
+                try {
+                    const docRef = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(async ({ addDoc, collection }) => {
+                        return await addDoc(collection(window.db, "clients"), newClient);
+                    });
+                    window.activeClient = { id: docRef.id, ...newClient };
+                    alert(`¡Bienvenido ${identifier}! Cuenta creada. Se han acreditado 100 puntos de bienvenida.`);
+                } catch (e) {
+                    console.error("Error al registrar cliente: ", e);
+                }
+            } else {
+                window.activeClient = client;
+                alert(`¡Bienvenido de nuevo, ${window.activeClient.name}!`);
+            }
+
+            window.isAdminActive = false;
+            document.getElementById('client-name').innerText = window.activeClient.name;
+            document.getElementById('client-phone-display').innerText = "Teléfono: " + window.activeClient.phone;
+            document.getElementById('client-points').innerText = window.activeClient.points;
+
+            window.switchView('client');
+        }
+
+        window.logout = function() {
+            window.activeClient = null;
+            window.isAdminActive = false;
+            document.getElementById('login-identifier').value = '';
+            document.getElementById('login-secret').value = '';
+            document.getElementById('client-name').innerText = "Invitado";
+            document.getElementById('client-phone-display').innerText = "Teléfono no registrado";
+            document.getElementById('client-points').innerText = "0";
+            window.switchView('auth');
+        }
+
+        window.renderProducts = function() {
+            const container = document.getElementById('client-rewards-container');
+            const adminList = document.getElementById('admin-products-list');
+            
+            if (!container || !adminList) return;
+            container.innerHTML = '';
+            adminList.innerHTML = '';
+
+            window.availableProducts.forEach(prod => {
+                const prodHtml = `
+                    <div class="p-5 border border-slate-100 rounded-2xl flex justify-between items-center bg-slate-50/30">
+                        <div>
+                            <h4 class="font-bold text-slate-900">${prod.name}</h4>
+                            <p class="text-sm text-slate-500 mt-1">Requiere ${prod.points} puntos</p>
+                        </div>
+                        <button onclick="redeemProduct(${prod.points})" class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-all">Canjear</button>
+                    </div>
+                `;
+                container.innerHTML += prodHtml;
+            });
+
+            window.availableProducts.forEach((prod) => {
+                const adminProdHtml = `
+                    <div class="flex justify-between items-center py-3 border-b border-slate-50 last:border-0">
+                        <div>
+                            <span class="font-medium text-slate-800">${prod.name}</span>
+                            <span class="ml-2 text-xs text-indigo-600 font-bold bg-indigo-50 px-2 py-1 rounded-lg">${prod.points} Pts</span>
+                        </div>
+                        <button onclick="deleteProduct('${prod.id}')" class="text-rose-600 hover:text-rose-700 p-2"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                adminList.innerHTML += adminProdHtml;
+            });
+        }
+
+        window.updateClientsTable = function() {
+            const tbody = document.getElementById('admin-clients-table');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            window.registeredClients.forEach((c) => {
+                const phoneForWhatsapp = c.phone ? c.phone.replace(/\s+/g, '') : '';
+                const rowHtml = `
+                    <tr>
+                        <td class="py-4 font-medium text-slate-900">${c.name}</td>
+                        <td class="py-4 text-slate-600">${c.phone}</td>
+                        <td class="py-4 font-bold text-indigo-600">${c.points} pts</td>
+                        <td class="py-4 flex gap-2">
+                            <button onclick="addPointsAdmin('${c.id}')" class="p-2 text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100" title="Sumar puntos"><i class="fa-solid fa-plus"></i></button>
+                            <button onclick="openWhatsApp('${phoneForWhatsapp}', '${c.name}')" class="p-2 text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></button>
+                            <button onclick="deleteClient('${c.id}')" class="p-2 text-rose-600 bg-rose-50 rounded-lg hover:bg-rose-100" title="Borrar Cliente"><i class="fa-solid fa-user-xmark"></i></button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += rowHtml;
+            });
+        }
+
+        window.addProduct = async function() {
+            const name = document.getElementById('new-product-name').value;
+            const points = parseInt(document.getElementById('new-product-points').value);
+
+            if (!name || isNaN(points) || points <= 0) {
+                alert('Por favor complete los campos correctamente.');
+                return;
+            }
+
+            try {
+                const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                await addDoc(collection(window.db, "products"), { name, points });
+                document.getElementById('new-product-name').value = '';
+                document.getElementById('new-product-points').value = '';
+                alert('Producto agregado exitosamente.');
+            } catch (e) {
+                console.error("Error al agregar producto: ", e);
+            }
+        }
+
+        window.deleteProduct = async function(id) {
+            try {
+                const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                await deleteDoc(doc(window.db, "products", id));
+                alert('Producto eliminado de la lista.');
+            } catch (e) {
+                console.error("Error al eliminar producto: ", e);
+            }
+        }
+
+        window.deleteClient = async function(id) {
+            const inputKey = prompt("Por favor, introduce la clave de seguridad para eliminar a este cliente:");
+            if (inputKey === window.SECURITY_KEY) {
+                try {
+                    const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                    await deleteDoc(doc(window.db, "clients", id));
+                    alert('Cliente eliminado correctamente.');
+                } catch (e) {
+                    console.error("Error al borrar el cliente: ", e);
+                }
+            } else if (inputKey !== null) {
+                alert("Clave de seguridad incorrecta. Operación cancelada.");
+            }
+        }
+
+        window.redeemProduct = async function(pointsNeeded) {
+            if (!window.activeClient) {
+                alert('Sesión no activa.');
+                return;
+            }
+
+            if (window.activeClient.points >= pointsNeeded) {
+                try {
+                    window.activeClient.points -= pointsNeeded;
+                    document.getElementById('client-points').innerText = window.activeClient.points;
+
+                    const { updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                    await updateDoc(doc(window.db, "clients", window.activeClient.id), { points: window.activeClient.points });
+                    alert('¡Canje exitoso! Puntos descontados.');
+                } catch (e) {
+                    console.error("Error al canjear: ", e);
+                }
+            } else {
+                alert('Puntos insuficientes para este producto.');
+            }
+        }
+
+        window.claimPoints = async function() {
+            const input = document.getElementById('qr-input').value;
+            if (!window.activeClient) {
+                alert('Sesión no activa.');
+                return;
+            }
+            if (input === '') {
+                alert('Por favor ingrese un código válido.');
+                return;
+            }
+
+            try {
+                window.activeClient.points += 20;
+                document.getElementById('client-points').innerText = window.activeClient.points;
+
+                const { updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                await updateDoc(doc(window.db, "clients", window.activeClient.id), { points: window.activeClient.points });
+                alert('¡Puntos sumados correctamente desde el código!');
+                document.getElementById('qr-input').value = '';
+            } catch (e) {
+                console.error("Error al sumar puntos: ", e);
+            }
+        }
+
+        window.addPointsAdmin = async function(clientId) {
+            let client = window.registeredClients.find(c => c.id === clientId);
+            if (client) {
+                try {
+                    const newPoints = client.points + 20;
+                    const { updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                    await updateDoc(doc(window.db, "clients", clientId), { points: newPoints });
+                    
+                    if (window.activeClient && window.activeClient.id === clientId) {
+                        window.activeClient.points = newPoints;
+                        document.getElementById('client-points').innerText = window.activeClient.points;
+                    }
+                    alert(`Se sumaron 20 puntos al cliente ${client.name}.`);
+                } catch (e) {
+                    console.error("Error al sumar puntos: ", e);
+                }
+            }
+        }
+
+        window.openWhatsApp = function(telefono, nombre) {
+            const message = `Hola ${nombre}, te escribimos desde el sistema para recordarte que ya puedes canjear tus productos acumulados. ¡Te esperamos!`;
+            window.open(`https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(message)}`, '_blank');
+        }
+    </script>
+
+</body>
+</html>
