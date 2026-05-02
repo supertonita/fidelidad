@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Fidelización </title>
+    <title>Sistema de Fidelización - En Línea</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <style>
         .minimal-card {
             background: rgba(255, 255, 255, 0.95);
@@ -45,11 +46,11 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Usuario o Tu Nombre</label>
-                        <input type="text" id="login-identifier" placeholder="Ej. Frank Reyes" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
+                        <input type="text" id="login-identifier" placeholder="Ej. josefrank o Frank Reyes" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Contraseña o Teléfono</label>
-                        <input type="text" id="login-secret" placeholder="Ej. +503 1234 5678" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
+                        <input type="text" id="login-secret" placeholder="Ej. 199818 o +503 1234 5678" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
                     </div>
                     <button onclick="handleLogin()" class="w-full py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all">Ingresar</button>
                 </div>
@@ -74,18 +75,25 @@
                     <i class="fa-solid fa-qrcode text-indigo-600 bg-indigo-50 p-3 rounded-xl"></i>
                     Escanear Código QR
                 </h3>
-                <p class="text-sm text-slate-500 mb-6">Ingresa el código para sumar tus puntos. De uso único por código.</p>
+                <p class="text-sm text-slate-500 mb-6">Usa la cámara de tu teléfono para escanear o ingresa el código manualmente.</p>
+                
+                <div class="mb-4">
+                    <button onclick="startCameraScanner()" class="w-full px-4 py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-camera"></i> Escanear con Cámara
+                    </button>
+                </div>
+
+                <div id="qr-reader" class="hidden w-full max-w-sm mx-auto mb-6 border border-slate-200 rounded-2xl overflow-hidden"></div>
                 
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <input type="text" id="qr-input" placeholder="Ingresa el código" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50/50">
+                    <input type="text" id="qr-input" placeholder="Ingresa el código manualmente" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50/50">
                     <button onclick="claimPoints()" class="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all shadow-sm">Canjear Código</button>
                 </div>
             </div>
 
             <div class="minimal-card p-8">
                 <h3 class="text-xl font-bold text-slate-900 mb-4">Canje de Recompensas</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4" id="client-rewards-container">
-                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4" id="client-rewards-container"></div>
             </div>
         </section>
 
@@ -107,8 +115,7 @@
                 </div>
 
                 <h4 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Productos Disponibles</h4>
-                <div class="divide-y divide-slate-100" id="admin-products-list">
-                    </div>
+                <div class="divide-y divide-slate-100" id="admin-products-list"></div>
             </div>
 
             <div class="minimal-card p-8">
@@ -123,8 +130,7 @@
                                 <th class="pb-4 text-xs font-medium text-slate-400 tracking-wider">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100" id="admin-clients-table">
-                            </tbody>
+                        <tbody class="divide-y divide-slate-100" id="admin-clients-table"></tbody>
                     </table>
                 </div>
             </div>
@@ -141,7 +147,6 @@
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
         import { getFirestore, collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCahZbwdPB5zBR_rdxTp4RIRmUoiGkyUOk",
             authDomain: "fidelidad-487f8.firebaseapp.com",
@@ -152,12 +157,10 @@
             measurementId: "G-0C9JYB08CV"
         };
 
-        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const db = getFirestore(app);
 
-        // Hacer las variables globales para el script HTML nativo
         window.db = db;
         window.SECURITY_KEY = "1234";
         window.availableProducts = [];
@@ -165,28 +168,21 @@
         window.activeClient = null;
         window.isAdminActive = false;
 
-        // Carga de Productos en tiempo real
         onSnapshot(collection(db, "products"), (snapshot) => {
             window.availableProducts = [];
             snapshot.forEach((doc) => {
                 window.availableProducts.push({ id: doc.id, ...doc.data() });
             });
-            if (window.renderProducts) {
-                window.renderProducts();
-            }
+            if (window.renderProducts) window.renderProducts();
         });
 
-        // Carga de Clientes en tiempo real
         onSnapshot(collection(db, "clients"), (snapshot) => {
             window.registeredClients = [];
             snapshot.forEach((doc) => {
                 window.registeredClients.push({ id: doc.id, ...doc.data() });
             });
-            if (window.updateClientsTable) {
-                window.updateClientsTable();
-            }
+            if (window.updateClientsTable) window.updateClientsTable();
 
-            // Actualizar la vista del cliente si está navegando
             if (window.activeClient) {
                 let found = window.registeredClients.find(c => c.phone === window.activeClient.phone);
                 if (found) {
@@ -259,7 +255,6 @@
                 return;
             }
 
-            // Identificador de Administrador
             if (identifier === "josefrank" && secret === "199818") {
                 window.isAdminActive = true;
                 window.activeClient = null;
@@ -268,7 +263,6 @@
                 return;
             }
 
-            // Verificar si el cliente existe en la base de datos
             let client = window.registeredClients.find(c => c.phone === secret);
 
             if (!client) {
@@ -303,6 +297,7 @@
             document.getElementById('client-name').innerText = "Invitado";
             document.getElementById('client-phone-display').innerText = "Teléfono no registrado";
             document.getElementById('client-points').innerText = "0";
+            window.stopCameraScanner();
             window.switchView('auth');
         }
 
@@ -450,6 +445,9 @@
                 await updateDoc(doc(window.db, "clients", window.activeClient.id), { points: window.activeClient.points });
                 alert('¡Puntos sumados correctamente desde el código!');
                 document.getElementById('qr-input').value = '';
+                
+                // Detener la cámara si estaba abierta tras una lectura correcta
+                window.stopCameraScanner();
             } catch (e) {
                 console.error("Error al sumar puntos: ", e);
             }
@@ -477,6 +475,47 @@
         window.openWhatsApp = function(telefono, nombre) {
             const message = `Hola ${nombre}, te escribimos desde el sistema para recordarte que ya puedes canjear tus productos acumulados. ¡Te esperamos!`;
             window.open(`https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        // Lector QR a través de la cámara del dispositivo móvil
+        let html5QrCode = null;
+
+        window.startCameraScanner = function() {
+            const readerElement = document.getElementById('qr-reader');
+            readerElement.classList.remove('hidden');
+
+            html5QrCode = new Html5Qrcode("qr-reader");
+            html5QrCode.start(
+                { facingMode: "environment" }, // Usa la cámara trasera del dispositivo
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                (decodedText, decodedResult) => {
+                    // Texto decodificado
+                    document.getElementById('qr-input').value = decodedText;
+                    alert(`Código escaneado: ${decodedText}`);
+                    // Opcional: Cerrar cámara tras lectura
+                    window.stopCameraScanner();
+                },
+                (errorMessage) => {
+                    // Ignorar errores de escaneo
+                }
+            ).catch(err => {
+                console.error("Error al abrir la cámara:", err);
+                alert("No se pudo iniciar la cámara. Asegúrate de haber otorgado los permisos necesarios.");
+            });
+        }
+
+        window.stopCameraScanner = function() {
+            if (html5QrCode) {
+                html5QrCode.stop().then((ignore) => {
+                    document.getElementById('qr-reader').classList.add('hidden');
+                    html5QrCode = null;
+                }).catch(err => {
+                    console.error("Error al detener la cámara:", err);
+                });
+            }
         }
     </script>
 
