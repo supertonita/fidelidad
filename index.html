@@ -3,44 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Sistema de Fidelización</title>
-    <!-- Tailwind CSS -->
+    <title>Loyalty Pro - Sistema de Fidelización</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- QR Code Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- HTML5 QR Scanner -->
     <script src="https://unpkg.com/html5-qrcode"></script>
 
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
-        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
         .hidden { display: none; }
         #qr-reader { width: 100% !important; border: none !important; border-radius: 1rem; overflow: hidden; }
         #qr-reader__dashboard { display: none !important; }
     </style>
 </head>
-<body class="pb-20">
+<body class="pb-24">
 
-    <!-- BARRA DE NAVEGACIÓN -->
+    <!-- NAVEGACIÓN -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-slate-100 z-50 px-6 py-3">
         <div class="max-w-md mx-auto flex justify-around items-center">
-            <button onclick="switchView('auth')" id="btn-nav-auth" class="flex flex-col items-center text-slate-400 hover:text-indigo-600 transition-colors">
+            <button onclick="switchView('auth')" id="btn-nav-auth" class="flex flex-col items-center text-indigo-600">
                 <i class="fa-solid fa-user-lock text-xl"></i>
                 <span class="text-[10px] mt-1 font-medium">Login</span>
             </button>
-            <button onclick="switchView('client')" id="btn-nav-client" class="hidden flex flex-col items-center text-slate-400 hover:text-indigo-600 transition-colors">
+            <button onclick="switchView('client')" id="btn-nav-client" class="hidden flex flex-col items-center text-slate-400">
                 <i class="fa-solid fa-star text-xl"></i>
-                <span class="text-[10px] mt-1 font-medium">Mis Puntos</span>
+                <span class="text-[10px] mt-1 font-medium">Puntos</span>
             </button>
-            <button onclick="switchView('admin')" id="btn-nav-admin" class="hidden flex flex-col items-center text-slate-400 hover:text-indigo-600 transition-colors">
+            <button onclick="switchView('admin')" id="btn-nav-admin" class="hidden flex flex-col items-center text-slate-400">
                 <i class="fa-solid fa-gauge-high text-xl"></i>
                 <span class="text-[10px] mt-1 font-medium">Admin</span>
             </button>
-            <button onclick="logout()" id="btn-logout" class="hidden flex flex-col items-center text-rose-400 hover:text-rose-600 transition-colors">
+            <button onclick="logout()" id="btn-logout" class="hidden flex flex-col items-center text-rose-400">
                 <i class="fa-solid fa-right-from-bracket text-xl"></i>
                 <span class="text-[10px] mt-1 font-medium">Salir</span>
             </button>
@@ -49,450 +43,295 @@
 
     <main class="max-w-md mx-auto p-4 pt-8">
 
-        <!-- 1. VISTA AUTH (LOGIN/REGISTRO) -->
+        <!-- 1. VISTA LOGIN -->
         <section id="auth-view" class="space-y-6">
-            <div class="text-center space-y-2">
-                <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-indigo-200 mb-6">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto shadow-xl mb-6">
                     <i class="fa-solid fa-bolt text-white text-3xl"></i>
                 </div>
-                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Bienvenido</h1>
-                <p class="text-slate-500">Ingresa para sumar y canjear puntos</p>
+                <h1 class="text-3xl font-extrabold text-slate-900">Bienvenido</h1>
+                <p class="text-slate-500">Sistema de Fidelización</p>
             </div>
 
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-4">
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre Completo</label>
-                    <input type="text" id="login-identifier" placeholder="Ej: Juan Pérez" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Teléfono (ID Secreta)</label>
-                    <input type="tel" id="login-secret" placeholder="Solo números" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
-                </div>
-                <button onclick="handleLogin()" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all">
-                    ENTRAR AL SISTEMA
+                <input type="text" id="login-identifier" placeholder="Nombre" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 outline-none">
+                <input type="tel" id="login-secret" placeholder="Teléfono" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 outline-none">
+                <button onclick="handleLogin()" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition-all">
+                    ENTRAR
                 </button>
             </div>
         </section>
 
         <!-- 2. VISTA CLIENTE -->
         <section id="client-view" class="hidden space-y-6">
-            <div class="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
-                <div class="relative z-10">
-                    <p class="text-indigo-100 text-sm font-medium">Puntos Acumulados</p>
-                    <h2 class="text-5xl font-black mt-1" id="client-points">0</h2>
-                    <div class="mt-4 flex items-center gap-2">
-                        <div class="bg-white/20 px-3 py-1 rounded-full text-xs" id="client-name">Invitado</div>
-                        <div class="bg-white/20 px-3 py-1 rounded-full text-xs" id="client-phone-display">---</div>
-                    </div>
+            <div class="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                <p class="text-indigo-100 text-sm">Tus Puntos</p>
+                <h2 class="text-5xl font-black mt-1" id="client-points">0</h2>
+                <div class="mt-4 flex gap-2">
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs" id="client-name">---</span>
                 </div>
-                <i class="fa-solid fa-crown absolute -right-4 -bottom-4 text-8xl text-white/10 rotate-12"></i>
             </div>
 
-            <!-- Escáner -->
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-qrcode text-indigo-600"></i> Sumar Puntos
-                </h3>
+                <h3 class="font-bold mb-4"><i class="fa-solid fa-qrcode text-indigo-600 mr-2"></i>Sumar Puntos</h3>
                 <div id="qr-reader" class="hidden mb-4"></div>
-                <div class="flex gap-2">
+                <div class="flex gap-2 mb-3">
                     <input type="text" id="qr-input" placeholder="Código de ticket" class="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 text-sm">
-                    <button onclick="claimPoints()" class="bg-slate-900 text-white px-4 rounded-xl font-bold text-sm">Validar</button>
+                    <button onclick="claimPoints()" class="bg-slate-900 text-white px-4 rounded-xl font-bold">Validar</button>
                 </div>
-                <button onclick="startCameraScanner()" class="w-full mt-3 border-2 border-indigo-600 text-indigo-600 font-bold py-3 rounded-xl flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-camera"></i> ESCANEAR QR TICKET
+                <button onclick="startCameraScanner()" class="w-full border-2 border-indigo-600 text-indigo-600 font-bold py-3 rounded-xl">
+                    <i class="fa-solid fa-camera mr-2"></i> ESCANEAR QR
                 </button>
             </div>
 
-            <!-- Premios -->
             <div class="space-y-4">
-                <h3 class="font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-gift text-indigo-600"></i> Premios Disponibles
-                </h3>
-                <div id="client-rewards-container" class="space-y-3">
-                    <!-- Dinámico -->
-                </div>
+                <h3 class="font-bold text-slate-900"><i class="fa-solid fa-gift text-indigo-600 mr-2"></i>Catálogo</h3>
+                <div id="client-rewards-container" class="space-y-3"></div>
             </div>
         </section>
 
         <!-- 3. VISTA ADMIN -->
         <section id="admin-view" class="hidden space-y-6">
-            <div class="flex items-center justify-between">
-                <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tight">Panel Control</h2>
-                <span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-1 rounded-md">MODO ADMIN</span>
-            </div>
-
-            <!-- Generador de Tickets -->
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                <h3 class="font-bold text-slate-900 mb-4 tracking-tight">GENERAR TICKET DE PUNTOS</h3>
-                <input type="number" id="qr-bill-amount" placeholder="Monto de la venta ($)" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 mb-4 font-bold text-lg">
-                <button onclick="generateQRCodes()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl mb-4">GENERAR CÓDIGO ÚNICO</button>
+                <h3 class="font-bold mb-4 uppercase">Generar Puntos</h3>
+                <input type="number" id="qr-bill-amount" placeholder="Monto de venta ($)" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 mb-4 font-bold">
+                <button onclick="generateQRCodes()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl">GENERAR QR ÚNICO</button>
                 
-                <div id="qr-result-area" class="flex flex-col items-center bg-slate-50 p-4 rounded-2xl border border-dashed border-slate-200">
-                    <div id="qr-link-container" class="mb-4 bg-white p-2 rounded-lg hidden"></div>
+                <div class="mt-4 flex flex-col items-center bg-slate-50 p-4 rounded-2xl border border-dashed border-slate-200">
+                    <div id="qr-link-container" class="hidden"></div>
                     <div id="qr-points-container" class="bg-white p-2 rounded-lg"></div>
-                    <p id="qr-points-label" class="mt-2 font-bold text-indigo-600">Listo para generar</p>
-                    <button onclick="printQRCodes()" class="mt-4 text-sm font-bold text-slate-500 hover:text-slate-900">
-                        <i class="fa-solid fa-print"></i> Imprimir Ticket Térmico
-                    </button>
+                    <p id="qr-points-label" class="mt-2 font-bold text-indigo-600">Sin código</p>
+                    <button onclick="printQRCodes()" class="mt-4 text-xs font-bold text-slate-500 underline"><i class="fa-solid fa-print mr-1"></i>Imprimir Ticket</button>
                 </div>
             </div>
 
-            <!-- Gestión de Inventario -->
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                <h3 class="font-bold text-slate-900 mb-4">NUEVO PREMIO</h3>
+                <h3 class="font-bold mb-4 uppercase">Nuevo Premio</h3>
                 <div class="space-y-3">
-                    <input type="text" id="new-product-name" placeholder="Nombre del producto" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 text-sm">
-                    <input type="number" id="new-product-points" placeholder="Puntos necesarios" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 text-sm">
-                    <button onclick="addProduct()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl">GUARDAR PREMIO</button>
+                    <input type="text" id="new-product-name" placeholder="Nombre premio" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 text-sm">
+                    <input type="number" id="new-product-points" placeholder="Puntos" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 text-sm">
+                    <button onclick="addProduct()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl">GUARDAR</button>
                 </div>
-                <div id="admin-products-list" class="mt-6 divide-y divide-slate-50">
-                    <!-- Lista Dinámica -->
-                </div>
+                <div id="admin-products-list" class="mt-6 divide-y divide-slate-50"></div>
             </div>
 
-            <!-- Tabla de Clientes -->
             <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="p-6 border-b border-slate-50">
-                    <h3 class="font-bold text-slate-900">CLIENTES REGISTRADOS</h3>
-                </div>
+                <div class="p-4 bg-slate-50 font-bold text-xs">CLIENTES</div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-400">
-                            <tr>
-                                <th class="px-6 py-3">Cliente</th>
-                                <th class="px-6 py-3">Teléfono</th>
-                                <th class="px-6 py-3">Puntos</th>
-                                <th class="px-6 py-3">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-clients-table" class="divide-y divide-slate-50">
-                            <!-- Lista Dinámica -->
-                        </tbody>
+                    <table class="w-full text-left text-sm">
+                        <tbody id="admin-clients-table" class="divide-y divide-slate-50"></tbody>
                     </table>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- FIREBASE & LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, deleteDoc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // CONFIGURACIÓN FIREBASE (Reemplaza con tus credenciales)
+        // ==========================================
+        // CONFIGURA TUS DATOS DE FIREBASE AQUÍ
+        // ==========================================
         const firebaseConfig = {
-            apiKey: "AIzaSy...",
-            authDomain: "tu-proyecto.firebaseapp.com",
-            projectId: "tu-proyecto",
-            storageBucket: "tu-proyecto.appspot.com",
-            messagingSenderId: "...",
-            appId: "..."
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_PROYECTO.firebaseapp.com",
+            projectId: "TU_PROYECTO_ID",
+            storageBucket: "TU_PROYECTO.appspot.com",
+            messagingSenderId: "TU_ID",
+            appId: "TU_APP_ID"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // GLOBALES
         window.db = db;
         window.registeredClients = [];
         window.availableProducts = [];
         window.activeClient = null;
         window.isAdminActive = false;
-        window.SECURITY_KEY = "199818"; // Clave borrar clientes
+        window.SECURITY_KEY = "199818";
 
-        // ESCUCHAS EN TIEMPO REAL
-        onSnapshot(collection(db, "clients"), (snapshot) => {
-            window.registeredClients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            window.updateClientsTable();
+        // ESCUCHAS FIREBASE
+        onSnapshot(collection(db, "clients"), (snap) => {
+            window.registeredClients = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            updateClientsTable();
             if(window.activeClient) {
-                const updated = window.registeredClients.find(c => c.id === window.activeClient.id);
-                if(updated) {
-                    window.activeClient = updated;
-                    document.getElementById('client-points').innerText = updated.points;
+                const me = window.registeredClients.find(c => c.id === window.activeClient.id);
+                if(me) { 
+                    window.activeClient = me; 
+                    document.getElementById('client-points').innerText = me.points;
+                    renderProducts(); 
                 }
             }
         });
 
-        onSnapshot(collection(db, "products"), (snapshot) => {
-            window.availableProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            window.renderProducts();
+        onSnapshot(collection(db, "products"), (snap) => {
+            window.availableProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderProducts();
         });
 
-        // --- LÓGICA DE NAVEGACIÓN ---
-        window.switchView = function(view) {
-            const views = ['auth', 'client', 'admin'];
-            views.forEach(v => document.getElementById(`${v}-view`).classList.add('hidden'));
-
-            const btnAuth = document.getElementById('btn-nav-auth');
-            const btnClient = document.getElementById('btn-nav-client');
-            const btnAdmin = document.getElementById('btn-nav-admin');
-            const btnLogout = document.getElementById('btn-logout');
-
-            if (view === 'auth') {
-                document.getElementById('auth-view').classList.remove('hidden');
-                btnAuth.classList.remove('hidden');
-                btnClient.classList.add('hidden');
-                btnAdmin.classList.add('hidden');
-                btnLogout.classList.add('hidden');
-            } else if (view === 'client') {
-                if (!window.activeClient && !window.isAdminActive) {
-                    alert('Inicie sesión primero.');
-                    window.switchView('auth');
-                    return;
-                }
-                document.getElementById('client-view').classList.remove('hidden');
-                btnAuth.classList.add('hidden');
-                btnClient.classList.remove('hidden');
-                btnLogout.classList.remove('hidden');
-                if (window.isAdminActive) btnAdmin.classList.remove('hidden');
-            } else if (view === 'admin') {
-                if (!window.isAdminActive) {
-                    alert('Acceso no autorizado.');
-                    window.switchView('auth');
-                    return;
-                }
-                document.getElementById('admin-view').classList.remove('hidden');
-                btnAdmin.classList.remove('hidden');
-                btnClient.classList.remove('hidden');
-                btnLogout.classList.remove('hidden');
-                btnAuth.classList.add('hidden');
-            }
-        };
-
-        // --- MANEJO DE SESIÓN ---
-        window.handleLogin = async function() {
-            const identifier = document.getElementById('login-identifier').value.trim();
-            const secret = document.getElementById('login-secret').value.trim();
-
-            if (!identifier || !secret) return alert('Complete los campos.');
-
-            // Login Admin
-            if (identifier === "josefrank" && secret === "199818") {
-                window.isAdminActive = true;
-                window.activeClient = null;
-                alert('Sesión Admin iniciada.');
-                window.switchView('admin');
-                return;
-            }
-
-            // Login/Registro Cliente
-            let client = window.registeredClients.find(c => c.phone === secret);
-
-            if (!client) {
-                const newClient = { name: identifier, phone: secret, points: 100 };
-                const docRef = await addDoc(collection(db, "clients"), newClient);
-                window.activeClient = { id: docRef.id, ...newClient };
-                alert(`¡Bienvenido! Has ganado 100 puntos de regalo.`);
-            } else {
-                window.activeClient = client;
-                alert(`Hola de nuevo, ${client.name}.`);
-            }
-
-            window.isAdminActive = false;
-            document.getElementById('client-name').innerText = window.activeClient.name;
-            document.getElementById('client-phone-display').innerText = window.activeClient.phone;
-            document.getElementById('client-points').innerText = window.activeClient.points;
-            window.switchView('client');
-        };
-
-        window.logout = function() {
-            window.activeClient = null;
-            window.isAdminActive = false;
-            document.getElementById('login-identifier').value = '';
-            document.getElementById('login-secret').value = '';
-            window.switchView('auth');
-        };
-
-        // --- LÓGICA DE PUNTOS MEJORADA (UN SOLO USO) ---
-        window.generateQRCodes = function() {
-            const amount = parseFloat(document.getElementById('qr-bill-amount').value);
-            if (isNaN(amount) || amount <= 0) return alert('Monto inválido.');
-
-            const pts = Math.floor(amount);
-            // Creamos un ID único para el ticket para que no se pueda reutilizar
-            const uniqueTicketId = "TKT-" + Math.random().toString(36).substring(2, 9).toUpperCase();
-            const qrData = `PTS|${pts}|${uniqueTicketId}`;
-
-            document.getElementById('qr-points-label').innerText = `Valor: ${pts} pts (ID: ${uniqueTicketId})`;
-            document.getElementById('qr-link-container').innerHTML = '';
-            document.getElementById('qr-points-container').innerHTML = '';
-
-            // QR para entrar a la App
-            new QRCode(document.getElementById('qr-link-container'), { text: window.location.href.split('#')[0], width: 140, height: 140 });
-            // QR para los puntos (Contiene el ID único)
-            new QRCode(document.getElementById('qr-points-container'), { text: qrData, width: 140, height: 140 });
+        // NAVEGACIÓN
+        window.switchView = (view) => {
+            ['auth', 'client', 'admin'].forEach(v => document.getElementById(v+'-view').classList.add('hidden'));
+            document.getElementById(view+'-view').classList.remove('hidden');
             
-            alert('¡Código de un solo uso generado!');
+            // Actualizar botones nav
+            const btns = {auth:'btn-nav-auth', client:'btn-nav-client', admin:'btn-nav-admin'};
+            Object.values(btns).forEach(b => document.getElementById(b).classList.replace('text-indigo-600', 'text-slate-400'));
+            document.getElementById(btns[view]).classList.replace('text-slate-400', 'text-indigo-600');
         };
 
-        window.claimPoints = async function() {
-            const input = document.getElementById('qr-input').value.trim();
-            if (!window.activeClient) return alert('Sesión no activa.');
-            if (!input.includes('|')) return alert('Código inválido.');
+        // LOGIN
+        window.handleLogin = async () => {
+            const name = document.getElementById('login-identifier').value.trim();
+            const phone = document.getElementById('login-secret').value.trim();
+            if(!name || !phone) return alert("Completa los datos");
 
-            const [prefix, ptsStr, ticketId] = input.split('|');
-            const ptsToAdd = parseInt(ptsStr);
+            if(name === "josefrank" && phone === "199818") {
+                window.isAdminActive = true;
+                document.getElementById('btn-nav-admin').classList.remove('hidden');
+                document.getElementById('btn-logout').classList.remove('hidden');
+                switchView('admin'); return;
+            }
+
+            let c = window.registeredClients.find(x => x.phone === phone);
+            if(!c) {
+                const res = await addDoc(collection(db, "clients"), { name, phone, points: 100 });
+                c = { id: res.id, name, phone, points: 100 };
+            }
+            window.activeClient = c;
+            document.getElementById('client-name').innerText = c.name;
+            document.getElementById('btn-nav-client').classList.remove('hidden');
+            document.getElementById('btn-logout').classList.remove('hidden');
+            switchView('client');
+        };
+
+        window.logout = () => location.reload();
+
+        // PUNTOS (MEJORADO CON ACTUALIZACIÓN INSTANTÁNEA)
+        window.claimPoints = async () => {
+            const code = document.getElementById('qr-input').value.trim();
+            if(!window.activeClient || !code.includes('|')) return alert("Código inválido");
+
+            const [prefix, pts, tktId] = code.split('|');
+            const numPts = parseInt(pts);
 
             try {
-                // VERIFICACIÓN DE UN SOLO USO
-                const codeRef = doc(db, "used_codes", ticketId);
-                const codeSnap = await getDoc(codeRef);
+                const codeRef = doc(db, "used_codes", tktId);
+                const snap = await getDoc(codeRef);
 
-                if (codeSnap.exists()) {
-                    alert("❌ ERROR: Este código ya fue reclamado anteriormente.");
-                    document.getElementById('qr-input').value = '';
-                    return;
-                }
+                if(snap.exists()) return alert("❌ CÓDIGO YA USADO");
 
-                // Registrar código como usado
-                await setDoc(codeRef, {
-                    usedBy: window.activeClient.name,
-                    phone: window.activeClient.phone,
-                    at: serverTimestamp()
-                });
-
-                // Sumar puntos
-                const newTotal = (window.activeClient.points || 0) + ptsToAdd;
-                await updateDoc(doc(db, "clients", window.activeClient.id), { points: newTotal });
+                // 1. Bloquear código
+                await setDoc(codeRef, { usedBy: window.activeClient.phone, at: serverTimestamp() });
                 
-                alert(`¡Éxito! Sumaste ${ptsToAdd} puntos.`);
+                // 2. Sumar puntos
+                const newTotal = (window.activeClient.points || 0) + numPts;
+                await updateDoc(doc(db, "clients", window.activeClient.id), { points: newTotal });
+
+                // 3. Update Visual Inmediato
+                window.activeClient.points = newTotal;
+                document.getElementById('client-points').innerText = newTotal;
                 document.getElementById('qr-input').value = '';
-                window.stopCameraScanner();
-            } catch (e) {
-                alert("Error al procesar el código.");
-            }
+                alert(`¡Sumaste ${numPts} puntos!`);
+                stopCameraScanner();
+                renderProducts();
+            } catch(e) { alert("Error de conexión"); }
         };
 
-        window.redeemProduct = async function(pointsNeeded) {
-            if (window.activeClient.points < pointsNeeded) return alert('Puntos insuficientes.');
+        // ADMIN: GENERAR QR UNICO
+        window.generateQRCodes = () => {
+            const amt = parseFloat(document.getElementById('qr-bill-amount').value);
+            if(!amt) return alert("Monto inválido");
+            const pts = Math.floor(amt);
+            const id = "T-" + Math.random().toString(36).substring(2, 7).toUpperCase();
+            const data = `PTS|${pts}|${id}`;
+
+            document.getElementById('qr-points-label').innerText = `${pts} pts (ID: ${id})`;
+            document.getElementById('qr-points-container').innerHTML = '';
+            new QRCode(document.getElementById('qr-points-container'), { text: data, width: 150, height: 150 });
             
-            if(confirm(`¿Canjear este premio por ${pointsNeeded} pts?`)) {
-                const newTotal = window.activeClient.points - pointsNeeded;
-                await updateDoc(doc(db, "clients", window.activeClient.id), { points: newTotal });
-                alert('¡Canje exitoso! Muestra este mensaje al encargado.');
-            }
+            // Generar link de app solo si no existe
+            document.getElementById('qr-link-container').innerHTML = '';
+            new QRCode(document.getElementById('qr-link-container'), { text: window.location.href.split('#')[0], width: 100, height: 100 });
         };
 
-        // --- GESTIÓN ADMIN ---
-        window.addProduct = async function() {
-            const name = document.getElementById('new-product-name').value;
-            const pts = parseInt(document.getElementById('new-product-points').value);
-            if (name && pts) {
-                await addDoc(collection(db, "products"), { name, points: pts });
-                document.getElementById('new-product-name').value = '';
-                document.getElementById('new-product-points').value = '';
-            }
-        };
-
-        window.deleteProduct = async function(id) {
-            if(confirm("¿Eliminar premio?")) await deleteDoc(doc(db, "products", id));
-        };
-
-        window.deleteClient = async function(id) {
-            const key = prompt("Clave de seguridad:");
-            if (key === window.SECURITY_KEY) {
-                await deleteDoc(doc(db, "clients", id));
-                alert("Cliente borrado.");
-            } else {
-                alert("Clave incorrecta.");
-            }
-        };
-
-        window.addPointsAdmin = async function(clientId) {
-            const client = window.registeredClients.find(c => c.id === clientId);
-            const extra = prompt(`¿Puntos a sumar a ${client.name}?`, "20");
-            if (extra) {
-                await updateDoc(doc(db, "clients", clientId), { points: (client.points || 0) + parseInt(extra) });
-            }
-        };
-
-        window.openWhatsApp = function(telefono, nombre) {
-            const msg = `Hola ${nombre}, tienes puntos acumulados en nuestro sistema. ¡Te esperamos!`;
-            window.open(`https://wa.me/${telefono.replace(/\s+/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
-        };
-
-        // --- RENDERIZADO UI ---
-        window.renderProducts = function() {
+        // RENDER UI
+        function renderProducts() {
             const container = document.getElementById('client-rewards-container');
-            const adminList = document.getElementById('admin-products-list');
-            container.innerHTML = ''; adminList.innerHTML = '';
-
+            const admin = document.getElementById('admin-products-list');
+            container.innerHTML = ''; admin.innerHTML = '';
+            
             window.availableProducts.forEach(p => {
+                const canAfford = window.activeClient && window.activeClient.points >= p.points;
                 container.innerHTML += `
-                    <div class="p-4 border border-slate-100 rounded-2xl bg-white shadow-sm flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-slate-900">${p.name}</p>
-                            <p class="text-xs text-indigo-600 font-medium">${p.points} puntos</p>
-                        </div>
-                        <button onclick="redeemProduct(${p.points})" class="bg-indigo-600 text-white text-[10px] font-bold px-4 py-2 rounded-lg">CANJEAR</button>
+                    <div class="p-4 bg-white rounded-2xl border border-slate-100 flex justify-between items-center">
+                        <div><p class="font-bold text-slate-900">${p.name}</p><p class="text-xs text-indigo-600">${p.points} pts</p></div>
+                        <button onclick="redeemProduct(${p.points})" class="px-4 py-2 rounded-lg text-xs font-bold ${canAfford?'bg-indigo-600 text-white':'bg-slate-100 text-slate-400 cursor-not-allowed'}">CANJEAR</button>
                     </div>`;
-                
-                adminList.innerHTML += `
-                    <div class="flex justify-between items-center py-3">
-                        <span class="text-sm font-medium">${p.name} (${p.points} pts)</span>
-                        <button onclick="deleteProduct('${p.id}')" class="text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
-                    </div>`;
+                admin.innerHTML += `<div class="py-2 flex justify-between"><span>${p.name}</span><button onclick="deleteProduct('${p.id}')" class="text-rose-500 text-xs">Eliminar</button></div>`;
             });
-        };
+        }
 
-        window.updateClientsTable = function() {
-            const tbody = document.getElementById('admin-clients-table');
-            tbody.innerHTML = '';
-            window.registeredClients.forEach(c => {
-                tbody.innerHTML += `
-                    <tr class="text-sm">
-                        <td class="px-6 py-4 font-medium text-slate-900">${c.name}</td>
-                        <td class="px-6 py-4 text-slate-500">${c.phone}</td>
-                        <td class="px-6 py-4 font-bold text-indigo-600">${c.points}</td>
-                        <td class="px-6 py-4 flex gap-2">
-                            <button onclick="addPointsAdmin('${c.id}')" class="text-indigo-600"><i class="fa-solid fa-plus-circle"></i></button>
-                            <button onclick="openWhatsApp('${c.phone}', '${c.name}')" class="text-emerald-500"><i class="fa-brands fa-whatsapp"></i></button>
-                            <button onclick="deleteClient('${c.id}')" class="text-rose-400"><i class="fa-solid fa-user-xmark"></i></button>
-                        </td>
-                    </tr>`;
-            });
-        };
-
-        // --- CÁMARA & IMPRESIÓN ---
-        let html5QrCode = null;
-        window.startCameraScanner = function() {
-            const reader = document.getElementById('qr-reader');
-            reader.classList.remove('hidden');
-            html5QrCode = new Html5Qrcode("qr-reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
-                document.getElementById('qr-input').value = text;
-                window.claimPoints();
-            }).catch(err => alert("Error de cámara: " + err));
-        };
-
-        window.stopCameraScanner = function() {
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => {
-                    document.getElementById('qr-reader').classList.add('hidden');
-                    html5QrCode = null;
-                });
+        window.redeemProduct = async (pts) => {
+            if(window.activeClient.points < pts) return;
+            if(confirm("¿Canjear premio?")) {
+                const newT = window.activeClient.points - pts;
+                await updateDoc(doc(db, "clients", window.activeClient.id), { points: newT });
+                alert("Canje exitoso. Muestra esto en caja.");
             }
         };
 
-        window.printQRCodes = function() {
-            const linkContent = document.getElementById('qr-link-container').innerHTML;
-            const pointsContent = document.getElementById('qr-points-container').innerHTML;
-            const label = document.getElementById('qr-points-label').innerText;
-
-            const win = window.open('', '', 'height=600,width=350');
-            win.document.write(`<html><body style="font-family:monospace; text-align:center; padding:20px;">
-                <h3>TICKET DE PUNTOS</h3>
-                <div style="margin:20px 0;">${linkContent}<p>1. Escanea para entrar</p></div>
-                <hr style="border-top:1px dashed #000">
-                <div style="margin:20px 0;">${pointsContent}<p>2. Escanea para sumar</p><h3>${label}</h3></div>
-                <p>Válido hoy: ${new Date().toLocaleDateString()}</p>
-            </body></html>`);
-            win.document.close();
-            setTimeout(() => { win.print(); win.close(); }, 500);
+        window.addProduct = async () => {
+            const n = document.getElementById('new-product-name').value;
+            const p = parseInt(document.getElementById('new-product-points').value);
+            if(n && p) await addDoc(collection(db, "products"), { name:n, points:p });
         };
 
-        // INICIO
-        document.addEventListener("DOMContentLoaded", () => switchView('auth'));
+        window.deleteProduct = async (id) => deleteDoc(doc(db, "products", id));
+
+        function updateClientsTable() {
+            const t = document.getElementById('admin-clients-table');
+            t.innerHTML = '';
+            window.registeredClients.forEach(c => {
+                t.innerHTML += `<tr>
+                    <td class="p-3"><b>${c.name}</b><br><small>${c.phone}</small></td>
+                    <td class="p-3 text-indigo-600 font-bold">${c.points}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteClient('${c.id}')" class="text-rose-400"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        window.deleteClient = async (id) => { if(prompt("Pass:")===window.SECURITY_KEY) deleteDoc(doc(db, "clients", id)); };
+
+        // CAMARA
+        let scanner = null;
+        window.startCameraScanner = () => {
+            document.getElementById('qr-reader').classList.remove('hidden');
+            scanner = new Html5Qrcode("qr-reader");
+            scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
+                document.getElementById('qr-input').value = text;
+                claimPoints();
+            });
+        };
+        window.stopCameraScanner = () => { if(scanner) scanner.stop().then(()=>document.getElementById('qr-reader').classList.add('hidden')); };
+
+        // IMPRESION
+        window.printQRCodes = () => {
+            const win = window.open('', '', 'width=300,height=600');
+            win.document.write(`<html><body style="text-align:center;font-family:monospace">
+                <h3>LOYALTY TICKET</h3>
+                ${document.getElementById('qr-link-container').innerHTML}<p>ENTRA A LA APP</p>
+                <hr>
+                ${document.getElementById('qr-points-container').innerHTML}
+                <h3>${document.getElementById('qr-points-label').innerText}</h3>
+                <p>ESCANEAME PARA SUMAR</p>
+            </body></html>`);
+            win.document.close(); win.print();
+        };
     </script>
 </body>
 </html>
