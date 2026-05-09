@@ -221,6 +221,33 @@
                 }
             }
         });
+
+        // Funciones CRUD para Firebase dentro del scope del módulo
+        window.addProduct = async function() {
+            const name = document.getElementById('new-product-name').value.trim();
+            const points = parseInt(document.getElementById('new-product-points').value);
+            if (!name || isNaN(points)) return;
+            await addDoc(collection(db, "products"), { name, points });
+            document.getElementById('new-product-name').value = '';
+            document.getElementById('new-product-points').value = '';
+        };
+
+        window.deleteProduct = async function(id) {
+            if (confirm("¿Eliminar producto?")) {
+                await deleteDoc(doc(db, "products", id));
+            }
+        };
+
+        // MEJORA: Función para eliminar clientes con clave de seguridad
+        window.deleteClient = async function(id, nombre) {
+            const pin = prompt(`Para eliminar a "${nombre}", ingresa la clave de seguridad:`);
+            if (pin === window.SECURITY_KEY) {
+                await deleteDoc(doc(db, "clients", id));
+                alert("Cliente eliminado correctamente.");
+            } else if (pin !== null) {
+                alert("Clave incorrecta. No se pudo eliminar al cliente.");
+            }
+        };
     </script>
 
     <script>
@@ -228,7 +255,6 @@
             window.switchView('auth');
         });
 
-        // Escáner de Cámara
         window.html5QrCode = null;
         window.startCameraScanner = function() {
             const readerDiv = document.getElementById('qr-reader');
@@ -346,17 +372,13 @@
             if (!window.activeClient) return;
 
             try {
-                // El código QR ahora es un JSON: {"pts": 10, "id": "123..."}
                 const qrData = JSON.parse(input);
-                
                 if (!qrData.id || !qrData.pts) {
                     alert('Código QR no válido para este sistema.');
                     return;
                 }
 
                 const { doc, getDoc, setDoc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-                
-                // Verificar si el ID ya fue usado
                 const usedRef = doc(window.db, "used_codes", qrData.id);
                 const usedSnap = await getDoc(usedRef);
 
@@ -365,9 +387,7 @@
                     return;
                 }
 
-                // Marcar como usado y sumar puntos
                 await setDoc(usedRef, { usedBy: window.activeClient.name, date: new Date() });
-                
                 window.activeClient.points += qrData.pts;
                 await updateDoc(doc(window.db, "clients", window.activeClient.id), { points: window.activeClient.points });
                 
@@ -389,17 +409,19 @@
             }
 
             const points = Math.floor(billAmount);
-            // Crear ID único para este QR
             const uniqueId = "ID-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
-            
-            // Los datos que irán dentro del QR
             const qrPayload = JSON.stringify({ pts: points, id: uniqueId });
 
             document.getElementById('qr-points-label').innerText = `Valor: ${points} puntos (Único)`;
             document.getElementById('qr-link-container').innerHTML = '';
             document.getElementById('qr-points-container').innerHTML = '';
 
-            new QRCode(document.getElementById('qr-link-container'), { text: window.location.href.split('#')[0], width: 140, height: 140 });
+            new QRCode(document.getElementById('qr-link-container'), { 
+                text: "https://supertonita.github.io/fidelidad/", 
+                width: 140, 
+                height: 140 
+            });
+
             new QRCode(document.getElementById('qr-points-container'), { text: qrPayload, width: 140, height: 140 });
             
             alert('Código único generado. Una vez escaneado, quedará invalidado.');
@@ -423,7 +445,6 @@
             printWindow.print();
         };
 
-        // Funciones de administración (Add/Delete) se mantienen igual que en tu código original
         window.renderProducts = function() {
             const container = document.getElementById('client-rewards-container');
             const adminList = document.getElementById('admin-products-list');
@@ -448,7 +469,14 @@
                     <td>${c.phone}</td>
                     <td class="font-bold text-indigo-600">${c.points}</td>
                     <td>
-                        <button onclick="openWhatsApp('${c.phone}', '${c.name}')" class="text-emerald-600 p-2"><i class="fa-brands fa-whatsapp"></i></button>
+                        <div class="flex gap-1">
+                            <button onclick="openWhatsApp('${c.phone}', '${c.name}')" class="text-emerald-600 p-2 hover:bg-emerald-50 rounded-lg transition-colors" title="Enviar WhatsApp">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </button>
+                            <button onclick="deleteClient('${c.id}', '${c.name}')" class="text-rose-600 p-2 hover:bg-rose-50 rounded-lg transition-colors" title="Eliminar Cliente">
+                                <i class="fa-solid fa-user-xmark"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>`;
             });
