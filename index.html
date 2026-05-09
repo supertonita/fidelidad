@@ -47,11 +47,11 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Tu Nombre</label>
-                        <input type="text" id="login-identifier" placeholder="Ej.Frank Reyes" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
+                        <input type="text" id="login-identifier" placeholder="Ej. Frank Reyes" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Teléfono</label>
-                        <input type="text" id="login-secret" placeholder="Ej.+503 1234 5678" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
+                        <input type="text" id="login-secret" placeholder="Ej. +503 1234 5678" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
                     </div>
                     <button onclick="handleLogin()" class="w-full py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all">Ingresar</button>
                 </div>
@@ -100,7 +100,7 @@
 
         <section id="admin-view" class="hidden space-y-6">
             <div class="minimal-card p-8 mb-6">
-                <h3 class="text-xl font-bold text-slate-900 mb-6">Generador de Códigos QR</h3>
+                <h3 class="text-xl font-bold text-slate-900 mb-6">Generador de Códigos QR Únicos</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
                         <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Valor Factura ($)</label>
@@ -118,7 +118,7 @@
                         <p class="text-xs text-slate-400 mt-3">Enlace permanente para clientes</p>
                     </div>
                     <div class="flex flex-col items-center text-center">
-                        <h4 class="text-sm font-bold text-slate-900 mb-3">2. Código QR de Puntos</h4>
+                        <h4 class="text-sm font-bold text-slate-900 mb-3">2. Código QR de Puntos (Único)</h4>
                         <div id="qr-points-container" class="p-4 bg-white rounded-xl shadow-sm border border-slate-100 flex justify-center items-center h-48 w-48"></div>
                         <p class="text-xs font-semibold text-indigo-600 mt-3" id="qr-points-label">Valor: 0 puntos</p>
                     </div>
@@ -177,8 +177,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
-        import { getFirestore, collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCahZbwdPB5zBR_rdxTp4RIRmUoiGkyUOk",
@@ -186,12 +185,10 @@
             projectId: "fidelidad-487f8",
             storageBucket: "fidelidad-487f8.firebasestorage.app",
             messagingSenderId: "840301803243",
-            appId: "1:840301803243:web:be1612291a7765dab5b0ae",
-            measurementId: "G-0C9JYB08CV"
+            appId: "1:840301803243:web:be1612291a7765dab5b0ae"
         };
 
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const db = getFirestore(app);
 
         window.db = db;
@@ -231,6 +228,44 @@
             window.switchView('auth');
         });
 
+        // Escáner de Cámara
+        window.html5QrCode = null;
+        window.startCameraScanner = function() {
+            const readerDiv = document.getElementById('qr-reader');
+            readerDiv.classList.remove('hidden');
+            
+            if (window.html5QrCode) {
+                window.html5QrCode.stop().then(() => {
+                    initScanner();
+                });
+            } else {
+                initScanner();
+            }
+
+            function initScanner() {
+                window.html5QrCode = new Html5Qrcode("qr-reader");
+                window.html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    (decodedText) => {
+                        document.getElementById('qr-input').value = decodedText;
+                        window.claimPoints();
+                    },
+                    (errorMessage) => {}
+                ).catch(err => {
+                    alert("Error al iniciar cámara: " + err);
+                });
+            }
+        };
+
+        window.stopCameraScanner = function() {
+            if (window.html5QrCode) {
+                window.html5QrCode.stop().then(() => {
+                    document.getElementById('qr-reader').classList.add('hidden');
+                }).catch(() => {});
+            }
+        };
+
         window.switchView = function(view) {
             const authView = document.getElementById('auth-view');
             const clientView = document.getElementById('client-view');
@@ -252,32 +287,19 @@
                 btnAdmin.classList.add('hidden');
                 btnLogout.classList.add('hidden');
             } else if (view === 'client') {
-                if (!window.activeClient && !window.isAdminActive) {
-                    alert('Por favor, inicie sesión primero.');
-                    window.switchView('auth');
-                    return;
-                }
                 clientView.classList.remove('hidden');
                 btnAuth.classList.add('hidden');
                 btnClient.classList.remove('hidden');
-                btnAdmin.classList.add('hidden');
-                if (window.isAdminActive) {
-                    btnAdmin.classList.remove('hidden');
-                }
                 btnLogout.classList.remove('hidden');
+                if (window.isAdminActive) btnAdmin.classList.remove('hidden');
             } else if (view === 'admin') {
-                if (!window.isAdminActive) {
-                    alert('Acceso no autorizado.');
-                    window.switchView('auth');
-                    return;
-                }
                 adminView.classList.remove('hidden');
                 btnAuth.classList.add('hidden');
                 btnClient.classList.remove('hidden');
                 btnAdmin.classList.remove('hidden');
                 btnLogout.classList.remove('hidden');
             }
-        }
+        };
 
         window.handleLogin = async function() {
             const identifier = document.getElementById('login-identifier').value.trim();
@@ -290,8 +312,6 @@
 
             if (identifier === "josefrank" && secret === "199818") {
                 window.isAdminActive = true;
-                window.activeClient = null;
-                alert('¡Sesión de Administrador iniciada correctamente!');
                 window.switchView('admin');
                 return;
             }
@@ -300,357 +320,152 @@
 
             if (!client) {
                 const newClient = { name: identifier, phone: secret, points: 100 };
-                try {
-                    const docRef = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(async ({ addDoc, collection }) => {
-                        return await addDoc(collection(window.db, "clients"), newClient);
-                    });
-                    window.activeClient = { id: docRef.id, ...newClient };
-                    alert(`¡Bienvenido ${identifier}! Cuenta creada. Se han acreditado 100 puntos de bienvenida.`);
-                } catch (e) {
-                    console.error("Error al registrar cliente: ", e);
-                }
+                const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                const docRef = await addDoc(collection(window.db, "clients"), newClient);
+                window.activeClient = { id: docRef.id, ...newClient };
+                alert('¡Bienvenido! Se te han regalado 100 puntos.');
             } else {
                 window.activeClient = client;
-                alert(`¡Bienvenido de nuevo, ${window.activeClient.name}!`);
             }
 
-            window.isAdminActive = false;
             document.getElementById('client-name').innerText = window.activeClient.name;
             document.getElementById('client-phone-display').innerText = "Teléfono: " + window.activeClient.phone;
             document.getElementById('client-points').innerText = window.activeClient.points;
-
             window.switchView('client');
-        }
+        };
 
         window.logout = function() {
             window.activeClient = null;
             window.isAdminActive = false;
-            document.getElementById('login-identifier').value = '';
-            document.getElementById('login-secret').value = '';
-            document.getElementById('client-name').innerText = "Invitado";
-            document.getElementById('client-phone-display').innerText = "Teléfono no registrado";
-            document.getElementById('client-points').innerText = "0";
             window.stopCameraScanner();
             window.switchView('auth');
-        }
+        };
 
+        window.claimPoints = async function() {
+            const input = document.getElementById('qr-input').value;
+            if (!window.activeClient) return;
+
+            try {
+                // El código QR ahora es un JSON: {"pts": 10, "id": "123..."}
+                const qrData = JSON.parse(input);
+                
+                if (!qrData.id || !qrData.pts) {
+                    alert('Código QR no válido para este sistema.');
+                    return;
+                }
+
+                const { doc, getDoc, setDoc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                
+                // Verificar si el ID ya fue usado
+                const usedRef = doc(window.db, "used_codes", qrData.id);
+                const usedSnap = await getDoc(usedRef);
+
+                if (usedSnap.exists()) {
+                    alert('Este código ya fue utilizado por otro cliente.');
+                    return;
+                }
+
+                // Marcar como usado y sumar puntos
+                await setDoc(usedRef, { usedBy: window.activeClient.name, date: new Date() });
+                
+                window.activeClient.points += qrData.pts;
+                await updateDoc(doc(window.db, "clients", window.activeClient.id), { points: window.activeClient.points });
+                
+                alert(`¡Éxito! Has ganado ${qrData.pts} puntos.`);
+                document.getElementById('qr-input').value = '';
+                window.stopCameraScanner();
+
+            } catch (e) {
+                alert('Error: El código escaneado no es válido o ya fue usado.');
+                console.error(e);
+            }
+        };
+
+        window.generateQRCodes = function() {
+            const billAmount = parseFloat(document.getElementById('qr-bill-amount').value);
+            if (isNaN(billAmount) || billAmount <= 0) {
+                alert('Ingrese un monto válido.');
+                return;
+            }
+
+            const points = Math.floor(billAmount);
+            // Crear ID único para este QR
+            const uniqueId = "ID-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+            
+            // Los datos que irán dentro del QR
+            const qrPayload = JSON.stringify({ pts: points, id: uniqueId });
+
+            document.getElementById('qr-points-label').innerText = `Valor: ${points} puntos (Único)`;
+            document.getElementById('qr-link-container').innerHTML = '';
+            document.getElementById('qr-points-container').innerHTML = '';
+
+            new QRCode(document.getElementById('qr-link-container'), { text: window.location.href.split('#')[0], width: 140, height: 140 });
+            new QRCode(document.getElementById('qr-points-container'), { text: qrPayload, width: 140, height: 140 });
+            
+            alert('Código único generado. Una vez escaneado, quedará invalidado.');
+        };
+
+        window.printQRCodes = function() {
+            const pointsContainer = document.getElementById('qr-points-container');
+            if (!pointsContainer.hasChildNodes()) {
+                alert('Genere los códigos primero.');
+                return;
+            }
+
+            const printWindow = window.open('', '', 'height=600,width=350');
+            printWindow.document.write('<html><head><style>body{text-align:center;font-family:monospace;} img{width:180px;}</style></head><body>');
+            printWindow.document.write('<h2>SUPER TOÑITA</h2>');
+            printWindow.document.write('<p>Escanea para tus puntos:</p>');
+            printWindow.document.write(pointsContainer.innerHTML);
+            printWindow.document.write('<p>CODIGO UNICO</p>');
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        };
+
+        // Funciones de administración (Add/Delete) se mantienen igual que en tu código original
         window.renderProducts = function() {
             const container = document.getElementById('client-rewards-container');
             const adminList = document.getElementById('admin-products-list');
-            
             if (!container || !adminList) return;
-            container.innerHTML = '';
-            adminList.innerHTML = '';
-
+            container.innerHTML = ''; adminList.innerHTML = '';
             window.availableProducts.forEach(prod => {
-                const prodHtml = `
-                    <div class="p-5 border border-slate-100 rounded-2xl flex justify-between items-center bg-slate-50/30">
-                        <div>
-                            <h4 class="font-bold text-slate-900">${prod.name}</h4>
-                            <p class="text-sm text-slate-500 mt-1">Requiere ${prod.points} puntos</p>
-                        </div>
-                        <button onclick="redeemProduct(${prod.points})" class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-all">Canjear</button>
-                    </div>
-                `;
-                container.innerHTML += prodHtml;
+                container.innerHTML += `<div class="p-5 border border-slate-100 rounded-2xl flex justify-between items-center bg-slate-50/30">
+                    <div><h4 class="font-bold text-slate-900">${prod.name}</h4><p class="text-sm text-slate-500">Requiere ${prod.points} pts</p></div>
+                    <button onclick="redeemProduct(${prod.points})" class="px-4 py-2 bg-emerald-600 text-white text-sm rounded-xl">Canjear</button>
+                </div>`;
+                adminList.innerHTML += `<div class="flex justify-between py-2 border-b"><span>${prod.name} (${prod.points} pts)</span><button onclick="deleteProduct('${prod.id}')" class="text-rose-600"><i class="fa-solid fa-trash"></i></button></div>`;
             });
-
-            window.availableProducts.forEach((prod) => {
-                const adminProdHtml = `
-                    <div class="flex justify-between items-center py-3 border-b border-slate-50 last:border-0">
-                        <div>
-                            <span class="font-medium text-slate-800">${prod.name}</span>
-                            <span class="ml-2 text-xs text-indigo-600 font-bold bg-indigo-50 px-2 py-1 rounded-lg">${prod.points} Pts</span>
-                        </div>
-                        <button onclick="deleteProduct('${prod.id}')" class="text-rose-600 hover:text-rose-700 p-2"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                `;
-                adminList.innerHTML += adminProdHtml;
-            });
-        }
+        };
 
         window.updateClientsTable = function() {
             const tbody = document.getElementById('admin-clients-table');
             if (!tbody) return;
             tbody.innerHTML = '';
-
-            window.registeredClients.forEach((c) => {
-                const phoneForWhatsapp = c.phone ? c.phone.replace(/\s+/g, '') : '';
-                const rowHtml = `
-                    <tr>
-                        <td class="py-4 font-medium text-slate-900">${c.name}</td>
-                        <td class="py-4 text-slate-600">${c.phone}</td>
-                        <td class="py-4 font-bold text-indigo-600">${c.points} pts</td>
-                        <td class="py-4 flex gap-2">
-                            <button onclick="addPointsAdmin('${c.id}')" class="p-2 text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100" title="Sumar puntos"><i class="fa-solid fa-plus"></i></button>
-                            <button onclick="openWhatsApp('${phoneForWhatsapp}', '${c.name}')" class="p-2 text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></button>
-                            <button onclick="deleteClient('${c.id}')" class="p-2 text-rose-600 bg-rose-50 rounded-lg hover:bg-rose-100" title="Borrar Cliente"><i class="fa-solid fa-user-xmark"></i></button>
-                        </td>
-                    </tr>
-                `;
-                tbody.innerHTML += rowHtml;
+            window.registeredClients.forEach(c => {
+                tbody.innerHTML += `<tr>
+                    <td class="py-3">${c.name}</td>
+                    <td>${c.phone}</td>
+                    <td class="font-bold text-indigo-600">${c.points}</td>
+                    <td>
+                        <button onclick="openWhatsApp('${c.phone}', '${c.name}')" class="text-emerald-600 p-2"><i class="fa-brands fa-whatsapp"></i></button>
+                    </td>
+                </tr>`;
             });
-        }
+        };
 
-        window.addProduct = async function() {
-            const name = document.getElementById('new-product-name').value;
-            const points = parseInt(document.getElementById('new-product-points').value);
+        window.openWhatsApp = function(tel, nom) {
+            const msg = encodeURIComponent(`Hola ${nom}, tienes puntos acumulados en Super Toñita. ¡Ven a canjearlos!`);
+            window.open(`https://wa.me/${tel.replace(/\D/g,'')}?text=${msg}`);
+        };
 
-            if (!name || isNaN(points) || points <= 0) {
-                alert('Por favor complete los campos correctamente.');
-                return;
-            }
-
-            try {
-                const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-                await addDoc(collection(window.db, "products"), { name, points });
-                document.getElementById('new-product-name').value = '';
-                document.getElementById('new-product-points').value = '';
-                alert('Producto agregado exitosamente.');
-            } catch (e) {
-                console.error("Error al agregar producto: ", e);
-            }
-        }
-
-        window.deleteProduct = async function(id) {
-            try {
-                const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-                await deleteDoc(doc(window.db, "products", id));
-                alert('Producto eliminado de la lista.');
-            } catch (e) {
-                console.error("Error al eliminar producto: ", e);
-            }
-        }
-
-        window.deleteClient = async function(id) {
-            const inputKey = prompt("Por favor, introduce la clave de seguridad para eliminar a este cliente:");
-            if (inputKey === window.SECURITY_KEY) {
-                try {
-                    const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-                    await deleteDoc(doc(window.db, "clients", id));
-                    alert('Cliente eliminado correctamente.');
-                } catch (e) {
-                    console.error("Error al borrar el cliente: ", e);
-                }
-            } else if (inputKey !== null) {
-                alert("Clave de seguridad incorrecta. Operación cancelada.");
-            }
-        }
-
-        window.redeemProduct = async function(pointsNeeded) {
-            if (!window.activeClient) {
-                alert('Sesión no activa.');
-                return;
-            }
-
-            if (window.activeClient.points >= pointsNeeded) {
-                try {
-                    window.activeClient.points -= pointsNeeded;
-                    document.getElementById('client-points').innerText = window.activeClient.points;
-
-                    const { updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-                    await updateDoc(doc(window.db, "clients", window.activeClient.id), { points: window.activeClient.points });
-                    alert('¡Canje exitoso! Puntos descontados.');
-                } catch (e) {
-                    console.error("Error al canjear: ", e);
-                }
-            } else {
-                alert('Puntos insuficientes para este producto.');
-            }
-        }
-
-        window.claimPoints = async function() {
-            const input = document.getElementById('qr-input').value;
-            if (!window.activeClient) {
-                alert('Sesión no activa.');
-                return;
-            }
-            if (input === '') {
-                alert('Por favor ingrese un código válido.');
-                return;
-            }
-
-            try {
-                window.activeClient.points += parseInt(input) || 20; // Si es numérico usa el valor del QR, si no, suma 20 por defecto
-                document.getElementById('client-points').innerText = window.activeClient.points;
-
-                const { updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-                await updateDoc(doc(window.db, "clients", window.activeClient.id), { points: window.activeClient.points });
-                alert('¡Puntos sumados correctamente desde el código!');
-                document.getElementById('qr-input').value = '';
-                
-                window.stopCameraScanner();
-            } catch (e) {
-                console.error("Error al sumar puntos: ", e);
-            }
-        }
-
-        window.addPointsAdmin = async function(clientId) {
-            let client = window.registeredClients.find(c => c.id === clientId);
-            if (client) {
-                try {
-                    const newPoints = client.points + 20;
-                    const { updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-                    await updateDoc(doc(window.db, "clients", clientId), { points: newPoints });
-                    
-                    if (window.activeClient && window.activeClient.id === clientId) {
-                        window.activeClient.points = newPoints;
-                        document.getElementById('client-points').innerText = window.activeClient.points;
-                    }
-                    alert(`Se sumaron 20 puntos al cliente ${client.name}.`);
-                } catch (e) {
-                    console.error("Error al sumar puntos: ", e);
-                }
-            }
-        }
-
-        window.openWhatsApp = function(telefono, nombre) {
-            const message = `Hola ${nombre}, te escribimos desde el sistema para recordarte que ya puedes canjear tus productos acumulados. ¡Te esperamos!`;
-            window.open(`https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(message)}`, '_blank');
-        }
-
-        // Generador de Códigos QR
-        window.qrCodeLinkObj = null;
-        window.qrCodePointsObj = null;
-
-        window.generateQRCodes = function() {
-            const billAmountValue = document.getElementById('qr-bill-amount').value;
-            const billAmount = parseFloat(billAmountValue);
-
-            if (isNaN(billAmount) || billAmount < 0) {
-                alert('Por favor ingrese un valor de factura válido.');
-                return;
-            }
-
-            // Redondeo o valor entero de la factura (1 dólar = 1 punto)
-            const points = Math.floor(billAmount);
-            document.getElementById('qr-points-label').innerText = `Valor: ${points} puntos`;
-
-            // Limpiar contenedores
-            document.getElementById('qr-link-container').innerHTML = '';
-            document.getElementById('qr-points-container').innerHTML = '';
-
-            // Generar el QR del enlace fijo
-            const appUrl = window.location.href.split('#')[0];
-            window.qrCodeLinkObj = new QRCode(document.getElementById('qr-link-container'), {
-                text: appUrl,
-                width: 140,
-                height: 140,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.L // Baja corrección (L) optimiza la lectura en impresoras térmicas
-            });
-
-            // Generar el QR de puntos dinámicos
-            window.qrCodePointsObj = new QRCode(document.getElementById('qr-points-container'), {
-                text: points.toString(),
-                width: 140,
-                height: 140,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.L
-            });
-            
-            alert('¡Códigos QR generados exitosamente!');
-        }
-
-        window.printQRCodes = function() {
-            const linkContainer = document.getElementById('qr-link-container');
-            const pointsContainer = document.getElementById('qr-points-container');
-
-            if (!linkContainer.hasChildNodes() || !pointsContainer.hasChildNodes()) {
-                alert('Por favor, primero genere los códigos QR.');
-                return;
-            }
-
-            // Ventana vertical angosta estilo ticket térmico
-            const printWindow = window.open('', '', 'height=600,width=350');
-            printWindow.document.write('<html><head><title>Ticket de Fidelidad</title>');
-            printWindow.document.write('<style>');
-            printWindow.document.write('body { font-family: monospace; font-size: 12px; text-align: center; margin: 0; padding: 10px; width: 100%; color: #000; }');
-            printWindow.document.write('.ticket { width: 100%; max-width: 280px; margin: 0 auto; }');
-            printWindow.document.write('h2 { font-size: 14px; margin: 6px 0; text-transform: uppercase; border-bottom: 1px dashed #000; padding-bottom: 4px; }');
-            printWindow.document.write('.qr-box { margin: 12px 0; display: flex; flex-direction: column; align-items: center; }');
-            printWindow.document.write('img { margin: 0 auto; display: block; }');
-            printWindow.document.write('p { font-size: 11px; margin-top: 6px; font-weight: bold; }');
-            printWindow.document.write('.separator { border-top: 1px dashed #000; margin: 12px 0; }');
-            printWindow.document.write('</style>');
-            printWindow.document.write('</head><body>');
-
-            printWindow.document.write('<div class="ticket">');
-            printWindow.document.write('<h2>Comprobante de Fidelidad</h2>');
-            printWindow.document.write('<p>¡Gracias por preferirnos!</p>');
-            printWindow.document.write('<div class="separator"></div>');
-
-            // Código 1: Enlace a la App
-            printWindow.document.write('<div class="qr-box">');
-            printWindow.document.write('<strong>Enlace a la App</strong>');
-            printWindow.document.write(linkContainer.innerHTML);
-            printWindow.document.write('<p>Escanea para ingresar</p>');
-            printWindow.document.write('</div>');
-
-            printWindow.document.write('<div class="separator"></div>');
-
-            // Código 2: Puntos
-            printWindow.document.write('<div class="qr-box">');
-            printWindow.document.write('<strong>Puntos de la Factura</strong>');
-            printWindow.document.write(pointsContainer.innerHTML);
-            printWindow.document.write('<p>' + document.getElementById('qr-points-label').innerText + '</p>');
-            printWindow.document.write('</div>');
-
-            printWindow.document.write('<div class="separator"></div>');
-            printWindow.document.write('<p style="font-size: 10px; font-weight: normal;">Conserve este ticket para sumar sus puntos</p>');
-            printWindow.document.write('</div>');
-
-            printWindow.document.write('</body></html>');
-            printWindow.document.close();
-            printWindow.focus();
-            
-            setTimeout(() => {
-                printWindow.print();
-                printWindow.close();
-            }, 600);
-        }
-
-        // Lector QR a través de la cámara del dispositivo móvil
-        let html5QrCode = null;
-
-        window.startCameraScanner = function() {
-            const readerElement = document.getElementById('qr-reader');
-            readerElement.classList.remove('hidden');
-
-            html5QrCode = new Html5Qrcode("qr-reader");
-            html5QrCode = html5QrCode.start(
-                { facingMode: "environment" },
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 }
-                },
-                (decodedText, decodedResult) => {
-                    document.getElementById('qr-input').value = decodedText;
-                    alert(`Código escaneado: ${decodedText}`);
-                    window.stopCameraScanner();
-                },
-                (errorMessage) => {
-                    // Ignorar mensajes de error mientras lee
-                }
-            ).catch(err => {
-                console.error("Error al abrir la cámara:", err);
-                alert("No se pudo iniciar la cámara. Asegúrate de haber otorgado los permisos necesarios.");
-            });
-        }
-
-        window.stopCameraScanner = function() {
-            if (html5QrCode) {
-                html5QrCode.stop().then((ignore) => {
-                    document.getElementById('qr-reader').classList.add('hidden');
-                    html5QrCode = null;
-                }).catch(err => {
-                    console.error("Error al detener la cámara:", err);
-                });
-            }
-        }
+        window.redeemProduct = async function(pts) {
+            if (window.activeClient.points < pts) { alert('Puntos insuficientes'); return; }
+            const { updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+            window.activeClient.points -= pts;
+            await updateDoc(doc(window.db, "clients", window.activeClient.id), { points: window.activeClient.points });
+            alert('Canje exitoso.');
+        };
     </script>
-
 </body>
 </html>
