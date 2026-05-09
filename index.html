@@ -3,231 +3,654 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loyalty PRO | Sistema de Fidelización</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>SUPER TOÑITA - FIDELIZACION</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        .minimal-card { background: white; border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
-        .hidden { display: none !important; }
-        .bg-gradient-custom { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+        .minimal-card {
+            background: rgba(246, 248, 250, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-radius: 16px;
+        }
     </style>
 </head>
-<body class="bg-[#f8fafc] text-slate-900 font-sans">
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col justify-between">
 
-    <div id="app" class="max-w-md mx-auto min-h-screen p-4 pb-20">
-        
-        <section id="view-login" class="pt-16">
-            <div class="text-center mb-10">
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-900 text-white rounded-2xl mb-4 shadow-xl">
-                    <i class="fa-solid fa-crown text-2xl"></i>
+    <header class="bg-white/80 backdrop-blur-md border-b border-slate-100 py-4 px-6 sticky top-0 z-10">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-lg font-semibold tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-star text-amber-500"></i> SUPER TOÑITA
+            </h1>
+            <div class="flex gap-3">
+                <button id="btn-nav-auth" onclick="switchView('auth')" class="px-4 py-2 text-sm font-medium rounded-full bg-slate-900 text-white hover:bg-slate-800 transition-colors">Acceso</button>
+                <button id="btn-nav-client" onclick="switchView('client')" class="hidden px-4 py-2 text-sm font-medium rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">Mi Perfil</button>
+                <button id="btn-nav-admin" onclick="switchView('admin')" class="hidden px-4 py-2 text-sm font-medium rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">Panel Admin</button>
+                <button id="btn-logout" onclick="logout()" class="hidden px-4 py-2 text-sm font-medium rounded-full text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors">Salir</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-4xl w-full mx-auto px-6 py-8">
+
+        <section id="auth-view" class="space-y-6 max-w-md mx-auto">
+            <div class="minimal-card p-8">
+                <div class="text-center mb-6">
+                    <i class="fa-solid fa-user-circle text-4xl text-indigo-600 mb-2"></i>
+                    <h3 class="text-xl font-bold text-slate-900">SUPER TOÑITA CORINTO </h3>
+                    <p class="text-sm text-slate-500 mt-1">FIDELIZACION</p>
                 </div>
-                <h1 class="text-3xl font-black tracking-tight italic uppercase">Loyalty<span class="text-indigo-600">PRO</span></h1>
-                <p class="text-slate-400 font-medium italic">Business & Rewards System</p>
-            </div>
-            <div class="minimal-card p-8 space-y-4">
-                <input type="text" id="auth-user" placeholder="Usuario o Teléfono" class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none">
-                <input type="password" id="auth-pass" placeholder="Contraseña (Si aplica)" class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none">
-                <button id="btn-login" class="w-full py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-indigo-700 shadow-lg transition-all active:scale-95">Ingresar</button>
-            </div>
-        </section>
-
-        <section id="view-cashier" class="hidden space-y-6 animate-in fade-in duration-500">
-            <div class="flex justify-between items-center p-2">
-                <h2 class="font-black text-xl">MODO CAJERO</h2>
-                <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-slate-400"><i class="fa-solid fa-power-off"></i></button>
-            </div>
-            <div class="minimal-card p-8 text-center">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Puntos a generar</p>
-                <div class="flex items-center justify-center mb-6 border-b-2 border-slate-100 focus-within:border-indigo-500">
-                    <span class="text-3xl font-bold text-slate-300 mr-1">$</span>
-                    <input type="number" id="bill-input" placeholder="0.00" class="w-full text-4xl font-black focus:outline-none bg-transparent py-4 text-center">
-                </div>
-                <button id="btn-create-qr" class="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl shadow-lg hover:bg-indigo-700">Generar Ticket QR</button>
-            </div>
-            <div id="qr-display" class="hidden minimal-card p-8 text-center">
-                <div id="qr-target" class="flex justify-center mb-4"></div>
-                <p id="qr-pts-label" class="text-2xl font-black text-indigo-600"></p>
-                <button onclick="window.print()" class="mt-4 text-slate-400 text-sm font-medium underline"><i class="fa-solid fa-print mr-2"></i>Imprimir ahora</button>
-            </div>
-        </section>
-
-        <section id="view-admin" class="hidden space-y-6">
-            <div class="flex justify-between items-center p-2">
-                <h2 class="font-black text-xl">ADMIN PANEL</h2>
-                <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-slate-400"><i class="fa-solid fa-power-off"></i></button>
-            </div>
-
-            <div class="minimal-card p-6">
-                <h3 class="font-bold text-sm text-slate-400 uppercase mb-4"><i class="fa-solid fa-tag mr-2"></i>Nuevo Producto de Canje</h3>
-                <div class="space-y-3">
-                    <input type="text" id="admin-prod-name" placeholder="Nombre (Ej: Corte Gratis)" class="w-full p-3 bg-slate-50 rounded-xl outline-none border border-transparent focus:border-indigo-500">
-                    <input type="number" id="admin-prod-pts" placeholder="Puntos necesarios" class="w-full p-3 bg-slate-50 rounded-xl outline-none border border-transparent focus:border-indigo-500">
-                    <button id="btn-save-prod" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl text-sm hover:bg-indigo-700">Agregar al Catálogo</button>
-                </div>
-            </div>
-
-            <div class="minimal-card p-6">
-                <h3 class="font-bold text-sm text-slate-400 uppercase mb-4"><i class="fa-solid fa-users mr-2"></i>Gestión de Clientes</h3>
-                <div id="admin-clients-list" class="space-y-3">
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Tu Nombre</label>
+                        <input type="text" id="login-identifier" placeholder="Ej.Frank Reyes" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
                     </div>
-            </div>
-        </section>
-
-        <section id="view-client" class="hidden space-y-6">
-            <div class="bg-gradient-custom p-10 rounded-[32px] text-center text-white shadow-2xl relative overflow-hidden">
-                <p class="text-indigo-300 text-xs font-bold uppercase tracking-[0.2em] mb-2">Puntos Disponibles</p>
-                <h2 id="client-points-display" class="text-7xl font-black">0</h2>
-                <div class="absolute -bottom-4 -right-4 text-white/5 text-8xl"><i class="fa-solid fa-star"></i></div>
-            </div>
-            <div id="rewards-list" class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Teléfono</label>
+                        <input type="text" id="login-secret" placeholder="Ej.+503 1234 5678" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
+                    </div>
+                    <button onclick="handleLogin()" class="w-full py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all">Ingresar</button>
                 </div>
+            </div>
+        </section>
+        
+        <section id="client-view" class="hidden space-y-6">
+            <div class="minimal-card p-8 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                    <p class="text-sm font-medium text-slate-400 tracking-wider uppercase mb-1">Bienvenido de nuevo</p>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2" id="client-name">Invitado</h2>
+                    <p class="text-slate-500 text-sm" id="client-phone-display">Teléfono no registrado</p>
+                </div>
+                <div class="text-center md:text-right">
+                    <span class="text-sm text-slate-400 block mb-1">Puntos acumulados</span>
+                    <span class="text-5xl font-extrabold text-indigo-600" id="client-points">0</span>
+                </div>
+            </div>
+
+            <div class="minimal-card p-8">
+                <h3 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+                    <i class="fa-solid fa-qrcode text-indigo-600 bg-indigo-50 p-3 rounded-xl"></i>
+                    Escanear Código QR
+                </h3>
+                <p class="text-sm text-slate-500 mb-6">Usa la cámara de tu teléfono para escanear .</p>
+                
+                <div class="mb-4">
+                    <button onclick="startCameraScanner()" class="w-full px-4 py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-camera"></i> Escanear con Cámara
+                    </button>
+                </div>
+
+                <div id="qr-reader" class="hidden w-full max-w-sm mx-auto mb-6 border border-slate-200 rounded-2xl overflow-hidden"></div>
+                
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input type="text" id="qr-input" placeholder="Ingresa el código manualmente" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50/50">
+                    <button onclick="claimPoints()" class="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-all shadow-sm">Canjear Código</button>
+                </div>
+            </div>
+
+            <div class="minimal-card p-8">
+                <h3 class="text-xl font-bold text-slate-900 mb-4">Canje de Recompensas</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4" id="client-rewards-container"></div>
+            </div>
         </section>
 
-    </div>
+        <section id="admin-view" class="hidden space-y-6">
+            <div class="minimal-card p-8 mb-6">
+                <h3 class="text-xl font-bold text-slate-900 mb-6">Generador de Códigos QR</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Valor Factura ($)</label>
+                        <input type="number" id="qr-bill-amount" placeholder="Ej. 11.50" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="generateQRCodes()" class="w-full px-4 py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all">Generar QRs</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 p-6 border border-slate-100 rounded-2xl bg-slate-50/30" id="qr-display-container">
+                    <div class="flex flex-col items-center text-center">
+                        <h4 class="text-sm font-bold text-slate-900 mb-3">1. Enlace de la App (Fijo)</h4>
+                        <div id="qr-link-container" class="p-4 bg-white rounded-xl shadow-sm border border-slate-100 flex justify-center items-center h-48 w-48"></div>
+                        <p class="text-xs text-slate-400 mt-3">Enlace permanente para clientes</p>
+                    </div>
+                    <div class="flex flex-col items-center text-center">
+                        <h4 class="text-sm font-bold text-slate-900 mb-3">2. Código QR de Puntos</h4>
+                        <div id="qr-points-container" class="p-4 bg-white rounded-xl shadow-sm border border-slate-100 flex justify-center items-center h-48 w-48"></div>
+                        <p class="text-xs font-semibold text-indigo-600 mt-3" id="qr-points-label">Valor: 0 puntos</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button onclick="printQRCodes()" class="px-6 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-print"></i> Imprimir en Térmica
+                    </button>
+                </div>
+            </div>
+
+            <div class="minimal-card p-8 mb-6">
+                <h3 class="text-xl font-bold text-slate-900 mb-6">Cargar Nuevo Producto Canjeable</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Nombre del Producto</label>
+                        <input type="text" id="new-product-name" placeholder="Ej. Corte Premium" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">Puntos Requeridos</label>
+                        <input type="number" id="new-product-points" placeholder="Ej. 50" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="addProduct()" class="w-full px-4 py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all">Agregar Producto</button>
+                    </div>
+                </div>
+
+                <h4 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Productos Disponibles</h4>
+                <div class="divide-y divide-slate-100" id="admin-products-list"></div>
+            </div>
+
+            <div class="minimal-card p-8">
+                <h3 class="text-xl font-bold text-slate-900 mb-6">Clientes Registrados</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 text-left">
+                        <thead>
+                            <tr>
+                                <th class="pb-4 text-xs font-medium text-slate-400 tracking-wider">Nombre Cliente</th>
+                                <th class="pb-4 text-xs font-medium text-slate-400 tracking-wider">Teléfono</th>
+                                <th class="pb-4 text-xs font-medium text-slate-400 tracking-wider">Puntos</th>
+                                <th class="pb-4 text-xs font-medium text-slate-400 tracking-wider">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100" id="admin-clients-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-100 py-6 text-center text-xs text-slate-400">
+        <p>Sistema de Fidelización • Desarrollado para Premiar tu preferencia </p>
+    </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+        import { getFirestore, collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            // PEGA AQUÍ TUS CREDENCIALES
+            apiKey: "AIzaSyCahZbwdPB5zBR_rdxTp4RIRmUoiGkyUOk",
+            authDomain: "fidelidad-487f8.firebaseapp.com",
+            projectId: "fidelidad-487f8",
+            storageBucket: "fidelidad-487f8.firebasestorage.app",
+            messagingSenderId: "840301803243",
+            appId: "1:840301803243:web:be1612291a7765dab5b0ae",
+            measurementId: "G-0C9JYB08CV"
         };
 
         const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
         const db = getFirestore(app);
 
-        const MASTER_KEY = "199819"; // Clave para borrar clientes/productos
+        window.db = db;
+        window.SECURITY_KEY = "1234";
+        window.availableProducts = [];
+        window.registeredClients = [];
+        window.activeClient = null;
+        window.isAdminActive = false;
 
-        // --- FUNCIONES DE NAVEGACIÓN ---
-        function showSection(id) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        }
+        onSnapshot(collection(db, "products"), (snapshot) => {
+            window.availableProducts = [];
+            snapshot.forEach((doc) => {
+                window.availableProducts.push({ id: doc.id, ...doc.data() });
+            });
+            if (window.renderProducts) window.renderProducts();
+        });
 
-        // --- LÓGICA DE LOGIN ---
-        window.handleLogin = async () => {
-            const u = document.getElementById('auth-user').value.trim();
-            const p = document.getElementById('auth-pass').value.trim();
+        onSnapshot(collection(db, "clients"), (snapshot) => {
+            window.registeredClients = [];
+            snapshot.forEach((doc) => {
+                window.registeredClients.push({ id: doc.id, ...doc.data() });
+            });
+            if (window.updateClientsTable) window.updateClientsTable();
 
-            if (u === "josefrank" && p === "199818") {
-                showSection('view-admin');
-                loadAdminData();
-            } else if (u === "cajero" && p === "cajero123") {
-                showSection('view-cashier');
-            } else {
-                // Login de Cliente
-                const q = query(collection(db, "clients"), where("phone", "==", u));
-                const snap = await getDocs(q);
-                if (!snap.empty) {
-                    window.activeClient = { id: snap.docs[0].id, ...snap.docs[0].data() };
-                    document.getElementById('client-points-display').innerText = window.activeClient.points;
-                    showSection('view-client');
-                    loadRewards();
-                } else {
-                    alert("Usuario o Teléfono no registrado.");
+            if (window.activeClient) {
+                let found = window.registeredClients.find(c => c.phone === window.activeClient.phone);
+                if (found) {
+                    window.activeClient = found;
+                    document.getElementById('client-points').innerText = window.activeClient.points;
                 }
             }
-        };
-
-        // --- MÓDULO CAJERO ---
-        window.createTicketQR = () => {
-            const raw = document.getElementById('bill-input').value;
-            const pts = Math.floor(parseFloat(raw)); // Redondeo hacia abajo: 11.50 -> 11
-            if (!pts || pts <= 0) return alert("Ingresa un monto válido");
-
-            const qrData = JSON.stringify({ t: Date.now(), p: pts });
-            const url = `https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=${encodeURIComponent(qrData)}`;
-            
-            document.getElementById('qr-target').innerHTML = `<img src="${url}" class="rounded-xl shadow-lg">`;
-            document.getElementById('qr-pts-label').innerText = `${pts} PUNTOS GENERADOS`;
-            document.getElementById('qr-display').classList.remove('hidden');
-        };
-
-        // --- MÓDULO ADMIN ---
-        window.saveReward = async () => {
-            const name = document.getElementById('admin-prod-name').value;
-            const pts = parseInt(document.getElementById('admin-prod-pts').value);
-            if (!name || !pts) return alert("Completa los datos del producto.");
-
-            await addDoc(collection(db, "products"), { name, points: pts });
-            alert("Producto añadido al catálogo");
-            document.getElementById('admin-prod-name').value = '';
-            document.getElementById('admin-prod-pts').value = '';
-        };
-
-        window.deleteClient = async (id) => {
-            const pass = prompt("🔐 INGRESE CLAVE DE SEGURIDAD PARA BORRAR:");
-            if (pass === MASTER_KEY) {
-                await deleteDoc(doc(db, "clients", id));
-                alert("Cliente eliminado.");
-            } else if (pass !== null) {
-                alert("❌ Clave incorrecta.");
-            }
-        };
-
-        window.sendWhatsApp = (phone, name) => {
-            const msg = `¡Hola ${name}! 💈 Tienes puntos acumulados en la barbería. ¡Ven a canjearlos hoy mismo!`;
-            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-        };
-
-        function loadAdminData() {
-            onSnapshot(collection(db, "clients"), (snap) => {
-                const list = document.getElementById('admin-clients-list');
-                list.innerHTML = '';
-                snap.forEach(d => {
-                    const c = d.data();
-                    list.innerHTML += `
-                        <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                            <div><p class="font-black text-slate-800">${c.name}</p><p class="text-xs font-bold text-indigo-600">${c.points} PTS</p></div>
-                            <div class="flex gap-1">
-                                <button onclick="sendWhatsApp('${c.phone}', '${c.name}')" class="w-10 h-10 text-emerald-600 bg-white rounded-xl shadow-sm flex items-center justify-center"><i class="fa-brands fa-whatsapp text-lg"></i></button>
-                                <button onclick="deleteClient('${d.id}')" class="w-10 h-10 text-rose-500 bg-white rounded-xl shadow-sm flex items-center justify-center"><i class="fa-solid fa-trash-can text-sm"></i></button>
-                            </div>
-                        </div>`;
-                });
-            });
-        }
-
-        // --- MÓDULO CLIENTE (RECOMPENSAS) ---
-        async function loadRewards() {
-            const container = document.getElementById('rewards-list');
-            const snap = await getDocs(collection(db, "products"));
-            container.innerHTML = '';
-            snap.forEach(d => {
-                const p = d.data();
-                const canAfford = window.activeClient.points >= p.points;
-                container.innerHTML += `
-                    <div class="minimal-card p-5 flex justify-between items-center ${!canAfford ? 'opacity-50' : ''}">
-                        <div><p class="font-black text-slate-800">${p.name}</p><p class="text-sm font-bold text-indigo-600">${p.points} Puntos</p></div>
-                        <button onclick="redeemReward('${d.id}', '${p.name}', ${p.points})" 
-                                class="px-5 py-2 rounded-xl font-bold text-xs uppercase transition-all 
-                                ${canAfford ? 'bg-slate-900 text-white active:scale-95' : 'bg-slate-100 text-slate-400'}" 
-                                ${!canAfford ? 'disabled' : ''}>Canjear</button>
-                    </div>`;
-            });
-        }
-
-        window.redeemReward = async (id, name, cost) => {
-            if (confirm(`¿Canjear ${name} por ${cost} puntos?`)) {
-                const newTotal = window.activeClient.points - cost;
-                await updateDoc(doc(db, "clients", window.activeClient.id), { points: newTotal });
-                window.activeClient.points = newTotal;
-                document.getElementById('client-points-display').innerText = newTotal;
-                alert("¡Canje Exitoso! Muestra esta pantalla en caja.");
-                loadRewards();
-            }
-        };
-
-        // --- VÍNCULO DE EVENTOS (Arreglo del Login) ---
-        document.getElementById('btn-login').addEventListener('click', window.handleLogin);
-        document.getElementById('btn-create-qr').addEventListener('click', window.createTicketQR);
-        document.getElementById('btn-save-prod').addEventListener('click', window.saveReward);
-
-        // Exponer funciones necesarias para los 'onclick' del HTML generado
-        window.sendWhatsApp = sendWhatsApp;
-        window.deleteClient = deleteClient;
-        window.redeemReward = redeemReward;
-
+        });
     </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            window.switchView('auth');
+        });
+
+        window.switchView = function(view) {
+            const authView = document.getElementById('auth-view');
+            const clientView = document.getElementById('client-view');
+            const adminView = document.getElementById('admin-view');
+            
+            authView.classList.add('hidden');
+            clientView.classList.add('hidden');
+            adminView.classList.add('hidden');
+
+            const btnAuth = document.getElementById('btn-nav-auth');
+            const btnClient = document.getElementById('btn-nav-client');
+            const btnAdmin = document.getElementById('btn-nav-admin');
+            const btnLogout = document.getElementById('btn-logout');
+
+            if (view === 'auth') {
+                authView.classList.remove('hidden');
+                btnAuth.classList.remove('hidden');
+                btnClient.classList.add('hidden');
+                btnAdmin.classList.add('hidden');
+                btnLogout.classList.add('hidden');
+            } else if (view === 'client') {
+                if (!window.activeClient && !window.isAdminActive) {
+                    alert('Por favor, inicie sesión primero.');
+                    window.switchView('auth');
+                    return;
+                }
+                clientView.classList.remove('hidden');
+                btnAuth.classList.add('hidden');
+                btnClient.classList.remove('hidden');
+                btnAdmin.classList.add('hidden');
+                if (window.isAdminActive) {
+                    btnAdmin.classList.remove('hidden');
+                }
+                btnLogout.classList.remove('hidden');
+            } else if (view === 'admin') {
+                if (!window.isAdminActive) {
+                    alert('Acceso no autorizado.');
+                    window.switchView('auth');
+                    return;
+                }
+                adminView.classList.remove('hidden');
+                btnAuth.classList.add('hidden');
+                btnClient.classList.remove('hidden');
+                btnAdmin.classList.remove('hidden');
+                btnLogout.classList.remove('hidden');
+            }
+        }
+
+        window.handleLogin = async function() {
+            const identifier = document.getElementById('login-identifier').value.trim();
+            const secret = document.getElementById('login-secret').value.trim();
+
+            if (!identifier || !secret) {
+                alert('Por favor, rellene todos los campos.');
+                return;
+            }
+
+            if (identifier === "josefrank" && secret === "199818") {
+                window.isAdminActive = true;
+                window.activeClient = null;
+                alert('¡Sesión de Administrador iniciada correctamente!');
+                window.switchView('admin');
+                return;
+            }
+
+            let client = window.registeredClients.find(c => c.phone === secret);
+
+            if (!client) {
+                const newClient = { name: identifier, phone: secret, points: 100 };
+                try {
+                    const docRef = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(async ({ addDoc, collection }) => {
+                        return await addDoc(collection(window.db, "clients"), newClient);
+                    });
+                    window.activeClient = { id: docRef.id, ...newClient };
+                    alert(`¡Bienvenido ${identifier}! Cuenta creada. Se han acreditado 100 puntos de bienvenida.`);
+                } catch (e) {
+                    console.error("Error al registrar cliente: ", e);
+                }
+            } else {
+                window.activeClient = client;
+                alert(`¡Bienvenido de nuevo, ${window.activeClient.name}!`);
+            }
+
+            window.isAdminActive = false;
+            document.getElementById('client-name').innerText = window.activeClient.name;
+            document.getElementById('client-phone-display').innerText = "Teléfono: " + window.activeClient.phone;
+            document.getElementById('client-points').innerText = window.activeClient.points;
+
+            window.switchView('client');
+        }
+
+        window.logout = function() {
+            window.activeClient = null;
+            window.isAdminActive = false;
+            document.getElementById('login-identifier').value = '';
+            document.getElementById('login-secret').value = '';
+            document.getElementById('client-name').innerText = "Invitado";
+            document.getElementById('client-phone-display').innerText = "Teléfono no registrado";
+            document.getElementById('client-points').innerText = "0";
+            window.stopCameraScanner();
+            window.switchView('auth');
+        }
+
+        window.renderProducts = function() {
+            const container = document.getElementById('client-rewards-container');
+            const adminList = document.getElementById('admin-products-list');
+            
+            if (!container || !adminList) return;
+            container.innerHTML = '';
+            adminList.innerHTML = '';
+
+            window.availableProducts.forEach(prod => {
+                const prodHtml = `
+                    <div class="p-5 border border-slate-100 rounded-2xl flex justify-between items-center bg-slate-50/30">
+                        <div>
+                            <h4 class="font-bold text-slate-900">${prod.name}</h4>
+                            <p class="text-sm text-slate-500 mt-1">Requiere ${prod.points} puntos</p>
+                        </div>
+                        <button onclick="redeemProduct(${prod.points})" class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-all">Canjear</button>
+                    </div>
+                `;
+                container.innerHTML += prodHtml;
+            });
+
+            window.availableProducts.forEach((prod) => {
+                const adminProdHtml = `
+                    <div class="flex justify-between items-center py-3 border-b border-slate-50 last:border-0">
+                        <div>
+                            <span class="font-medium text-slate-800">${prod.name}</span>
+                            <span class="ml-2 text-xs text-indigo-600 font-bold bg-indigo-50 px-2 py-1 rounded-lg">${prod.points} Pts</span>
+                        </div>
+                        <button onclick="deleteProduct('${prod.id}')" class="text-rose-600 hover:text-rose-700 p-2"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                adminList.innerHTML += adminProdHtml;
+            });
+        }
+
+        window.updateClientsTable = function() {
+            const tbody = document.getElementById('admin-clients-table');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            window.registeredClients.forEach((c) => {
+                const phoneForWhatsapp = c.phone ? c.phone.replace(/\s+/g, '') : '';
+                const rowHtml = `
+                    <tr>
+                        <td class="py-4 font-medium text-slate-900">${c.name}</td>
+                        <td class="py-4 text-slate-600">${c.phone}</td>
+                        <td class="py-4 font-bold text-indigo-600">${c.points} pts</td>
+                        <td class="py-4 flex gap-2">
+                            <button onclick="addPointsAdmin('${c.id}')" class="p-2 text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100" title="Sumar puntos"><i class="fa-solid fa-plus"></i></button>
+                            <button onclick="openWhatsApp('${phoneForWhatsapp}', '${c.name}')" class="p-2 text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></button>
+                            <button onclick="deleteClient('${c.id}')" class="p-2 text-rose-600 bg-rose-50 rounded-lg hover:bg-rose-100" title="Borrar Cliente"><i class="fa-solid fa-user-xmark"></i></button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += rowHtml;
+            });
+        }
+
+        window.addProduct = async function() {
+            const name = document.getElementById('new-product-name').value;
+            const points = parseInt(document.getElementById('new-product-points').value);
+
+            if (!name || isNaN(points) || points <= 0) {
+                alert('Por favor complete los campos correctamente.');
+                return;
+            }
+
+            try {
+                const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                await addDoc(collection(window.db, "products"), { name, points });
+                document.getElementById('new-product-name').value = '';
+                document.getElementById('new-product-points').value = '';
+                alert('Producto agregado exitosamente.');
+            } catch (e) {
+                console.error("Error al agregar producto: ", e);
+            }
+        }
+
+        window.deleteProduct = async function(id) {
+            try {
+                const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                await deleteDoc(doc(window.db, "products", id));
+                alert('Producto eliminado de la lista.');
+            } catch (e) {
+                console.error("Error al eliminar producto: ", e);
+            }
+        }
+
+        window.deleteClient = async function(id) {
+            const inputKey = prompt("Por favor, introduce la clave de seguridad para eliminar a este cliente:");
+            if (inputKey === window.SECURITY_KEY) {
+                try {
+                    const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                    await deleteDoc(doc(window.db, "clients", id));
+                    alert('Cliente eliminado correctamente.');
+                } catch (e) {
+                    console.error("Error al borrar el cliente: ", e);
+                }
+            } else if (inputKey !== null) {
+                alert("Clave de seguridad incorrecta. Operación cancelada.");
+            }
+        }
+
+        window.redeemProduct = async function(pointsNeeded) {
+            if (!window.activeClient) {
+                alert('Sesión no activa.');
+                return;
+            }
+
+            if (window.activeClient.points >= pointsNeeded) {
+                try {
+                    window.activeClient.points -= pointsNeeded;
+                    document.getElementById('client-points').innerText = window.activeClient.points;
+
+                    const { updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                    await updateDoc(doc(window.db, "clients", window.activeClient.id), { points: window.activeClient.points });
+                    alert('¡Canje exitoso! Puntos descontados.');
+                } catch (e) {
+                    console.error("Error al canjear: ", e);
+                }
+            } else {
+                alert('Puntos insuficientes para este producto.');
+            }
+        }
+
+        window.claimPoints = async function() {
+            const input = document.getElementById('qr-input').value;
+            if (!window.activeClient) {
+                alert('Sesión no activa.');
+                return;
+            }
+            if (input === '') {
+                alert('Por favor ingrese un código válido.');
+                return;
+            }
+
+            try {
+                window.activeClient.points += parseInt(input) || 20; // Si es numérico usa el valor del QR, si no, suma 20 por defecto
+                document.getElementById('client-points').innerText = window.activeClient.points;
+
+                const { updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                await updateDoc(doc(window.db, "clients", window.activeClient.id), { points: window.activeClient.points });
+                alert('¡Puntos sumados correctamente desde el código!');
+                document.getElementById('qr-input').value = '';
+                
+                window.stopCameraScanner();
+            } catch (e) {
+                console.error("Error al sumar puntos: ", e);
+            }
+        }
+
+        window.addPointsAdmin = async function(clientId) {
+            let client = window.registeredClients.find(c => c.id === clientId);
+            if (client) {
+                try {
+                    const newPoints = client.points + 20;
+                    const { updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                    await updateDoc(doc(window.db, "clients", clientId), { points: newPoints });
+                    
+                    if (window.activeClient && window.activeClient.id === clientId) {
+                        window.activeClient.points = newPoints;
+                        document.getElementById('client-points').innerText = window.activeClient.points;
+                    }
+                    alert(`Se sumaron 20 puntos al cliente ${client.name}.`);
+                } catch (e) {
+                    console.error("Error al sumar puntos: ", e);
+                }
+            }
+        }
+
+        window.openWhatsApp = function(telefono, nombre) {
+            const message = `Hola ${nombre}, te escribimos desde el sistema para recordarte que ya puedes canjear tus productos acumulados. ¡Te esperamos!`;
+            window.open(`https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        // Generador de Códigos QR
+        window.qrCodeLinkObj = null;
+        window.qrCodePointsObj = null;
+
+        window.generateQRCodes = function() {
+            const billAmountValue = document.getElementById('qr-bill-amount').value;
+            const billAmount = parseFloat(billAmountValue);
+
+            if (isNaN(billAmount) || billAmount < 0) {
+                alert('Por favor ingrese un valor de factura válido.');
+                return;
+            }
+
+            // Redondeo o valor entero de la factura (1 dólar = 1 punto)
+            const points = Math.floor(billAmount);
+            document.getElementById('qr-points-label').innerText = `Valor: ${points} puntos`;
+
+            // Limpiar contenedores
+            document.getElementById('qr-link-container').innerHTML = '';
+            document.getElementById('qr-points-container').innerHTML = '';
+
+            // Generar el QR del enlace fijo
+            const appUrl = window.location.href.split('#')[0];
+            window.qrCodeLinkObj = new QRCode(document.getElementById('qr-link-container'), {
+                text: appUrl,
+                width: 140,
+                height: 140,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.L // Baja corrección (L) optimiza la lectura en impresoras térmicas
+            });
+
+            // Generar el QR de puntos dinámicos
+            window.qrCodePointsObj = new QRCode(document.getElementById('qr-points-container'), {
+                text: points.toString(),
+                width: 140,
+                height: 140,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.L
+            });
+            
+            alert('¡Códigos QR generados exitosamente!');
+        }
+
+        window.printQRCodes = function() {
+            const linkContainer = document.getElementById('qr-link-container');
+            const pointsContainer = document.getElementById('qr-points-container');
+
+            if (!linkContainer.hasChildNodes() || !pointsContainer.hasChildNodes()) {
+                alert('Por favor, primero genere los códigos QR.');
+                return;
+            }
+
+            // Ventana vertical angosta estilo ticket térmico
+            const printWindow = window.open('', '', 'height=600,width=350');
+            printWindow.document.write('<html><head><title>Ticket de Fidelidad</title>');
+            printWindow.document.write('<style>');
+            printWindow.document.write('body { font-family: monospace; font-size: 12px; text-align: center; margin: 0; padding: 10px; width: 100%; color: #000; }');
+            printWindow.document.write('.ticket { width: 100%; max-width: 280px; margin: 0 auto; }');
+            printWindow.document.write('h2 { font-size: 14px; margin: 6px 0; text-transform: uppercase; border-bottom: 1px dashed #000; padding-bottom: 4px; }');
+            printWindow.document.write('.qr-box { margin: 12px 0; display: flex; flex-direction: column; align-items: center; }');
+            printWindow.document.write('img { margin: 0 auto; display: block; }');
+            printWindow.document.write('p { font-size: 11px; margin-top: 6px; font-weight: bold; }');
+            printWindow.document.write('.separator { border-top: 1px dashed #000; margin: 12px 0; }');
+            printWindow.document.write('</style>');
+            printWindow.document.write('</head><body>');
+
+            printWindow.document.write('<div class="ticket">');
+            printWindow.document.write('<h2>Comprobante de Fidelidad</h2>');
+            printWindow.document.write('<p>¡Gracias por preferirnos!</p>');
+            printWindow.document.write('<div class="separator"></div>');
+
+            // Código 1: Enlace a la App
+            printWindow.document.write('<div class="qr-box">');
+            printWindow.document.write('<strong>Enlace a la App</strong>');
+            printWindow.document.write(linkContainer.innerHTML);
+            printWindow.document.write('<p>Escanea para ingresar</p>');
+            printWindow.document.write('</div>');
+
+            printWindow.document.write('<div class="separator"></div>');
+
+            // Código 2: Puntos
+            printWindow.document.write('<div class="qr-box">');
+            printWindow.document.write('<strong>Puntos de la Factura</strong>');
+            printWindow.document.write(pointsContainer.innerHTML);
+            printWindow.document.write('<p>' + document.getElementById('qr-points-label').innerText + '</p>');
+            printWindow.document.write('</div>');
+
+            printWindow.document.write('<div class="separator"></div>');
+            printWindow.document.write('<p style="font-size: 10px; font-weight: normal;">Conserve este ticket para sumar sus puntos</p>');
+            printWindow.document.write('</div>');
+
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.focus();
+            
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 600);
+        }
+
+        // Lector QR a través de la cámara del dispositivo móvil
+        let html5QrCode = null;
+
+        window.startCameraScanner = function() {
+            const readerElement = document.getElementById('qr-reader');
+            readerElement.classList.remove('hidden');
+
+            html5QrCode = new Html5Qrcode("qr-reader");
+            html5QrCode = html5QrCode.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                (decodedText, decodedResult) => {
+                    document.getElementById('qr-input').value = decodedText;
+                    alert(`Código escaneado: ${decodedText}`);
+                    window.stopCameraScanner();
+                },
+                (errorMessage) => {
+                    // Ignorar mensajes de error mientras lee
+                }
+            ).catch(err => {
+                console.error("Error al abrir la cámara:", err);
+                alert("No se pudo iniciar la cámara. Asegúrate de haber otorgado los permisos necesarios.");
+            });
+        }
+
+        window.stopCameraScanner = function() {
+            if (html5QrCode) {
+                html5QrCode.stop().then((ignore) => {
+                    document.getElementById('qr-reader').classList.add('hidden');
+                    html5QrCode = null;
+                }).catch(err => {
+                    console.error("Error al detener la cámara:", err);
+                });
+            }
+        }
+    </script>
+
 </body>
 </html>
