@@ -3,75 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUPER TOÑITA- Sistema de Puntos</title>
+    <title>Loyalty PRO | Sistema de Fidelización</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .minimal-card { background: white; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .hidden { display: none; }
+        .minimal-card { background: white; border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
+        .hidden { display: none !important; }
+        .bg-gradient-custom { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
     </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-900">
+<body class="bg-[#f8fafc] text-slate-900 font-sans">
 
-    <div id="app" class="max-w-md mx-auto min-h-screen p-4">
+    <div id="app" class="max-w-md mx-auto min-h-screen p-4 pb-20">
         
-        <section id="login-view" class="pt-12">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-black tracking-tight">SUPER <span class="text-indigo-600"> TOÑITA</span></h1>
-                <p class="text-slate-400">FIDELIZACION </p>
+        <section id="view-login" class="pt-16">
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-900 text-white rounded-2xl mb-4 shadow-xl">
+                    <i class="fa-solid fa-crown text-2xl"></i>
+                </div>
+                <h1 class="text-3xl font-black tracking-tight italic uppercase">Loyalty<span class="text-indigo-600">PRO</span></h1>
+                <p class="text-slate-400 font-medium italic">Business & Rewards System</p>
             </div>
             <div class="minimal-card p-8 space-y-4">
-                <input type="text" id="login-user" placeholder="Usuario o Teléfono" class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-600 outline-none">
-                <input type="password" id="login-pass" placeholder="Contraseña (si aplica)" class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-600 outline-none">
-                <button onclick="handleAuth()" class="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all">Ingresar</button>
+                <input type="text" id="auth-user" placeholder="Usuario o Teléfono" class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                <input type="password" id="auth-pass" placeholder="Contraseña (Si aplica)" class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                <button id="btn-login" class="w-full py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-indigo-700 shadow-lg transition-all active:scale-95">Ingresar</button>
             </div>
         </section>
 
-        <section id="cashier-view" class="hidden space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold">Panel Cajero</h2>
-                <button onclick="location.reload()" class="text-slate-400 text-sm">Salir</button>
+        <section id="view-cashier" class="hidden space-y-6 animate-in fade-in duration-500">
+            <div class="flex justify-between items-center p-2">
+                <h2 class="font-black text-xl">MODO CAJERO</h2>
+                <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-slate-400"><i class="fa-solid fa-power-off"></i></button>
             </div>
-            <div class="minimal-card p-6 text-center">
-                <i class="fa-solid fa-receipt text-4xl text-indigo-600 mb-4"></i>
-                <input type="number" id="bill-amount" placeholder="Monto de la venta ($)" class="w-full text-center text-2xl font-bold py-4 border-b mb-6 focus:outline-none">
-                <button onclick="generateTicketQR()" class="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl">Generar Ticket QR</button>
+            <div class="minimal-card p-8 text-center">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Puntos a generar</p>
+                <div class="flex items-center justify-center mb-6 border-b-2 border-slate-100 focus-within:border-indigo-500">
+                    <span class="text-3xl font-bold text-slate-300 mr-1">$</span>
+                    <input type="number" id="bill-input" placeholder="0.00" class="w-full text-4xl font-black focus:outline-none bg-transparent py-4 text-center">
+                </div>
+                <button id="btn-create-qr" class="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl shadow-lg hover:bg-indigo-700">Generar Ticket QR</button>
             </div>
-            <div id="qr-result" class="hidden minimal-card p-6 flex flex-col items-center">
-                <div id="qrcode-container"></div>
-                <p id="qr-value-label" class="mt-4 font-bold text-lg"></p>
-                <button onclick="window.print()" class="mt-4 text-slate-500 underline">Imprimir Ticket</button>
+            <div id="qr-display" class="hidden minimal-card p-8 text-center">
+                <div id="qr-target" class="flex justify-center mb-4"></div>
+                <p id="qr-pts-label" class="text-2xl font-black text-indigo-600"></p>
+                <button onclick="window.print()" class="mt-4 text-slate-400 text-sm font-medium underline"><i class="fa-solid fa-print mr-2"></i>Imprimir ahora</button>
             </div>
         </section>
 
-        <section id="admin-view" class="hidden space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold">Admin Panel</h2>
-                <button onclick="location.reload()" class="text-slate-400 text-sm">Salir</button>
+        <section id="view-admin" class="hidden space-y-6">
+            <div class="flex justify-between items-center p-2">
+                <h2 class="font-black text-xl">ADMIN PANEL</h2>
+                <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-slate-400"><i class="fa-solid fa-power-off"></i></button>
             </div>
 
             <div class="minimal-card p-6">
-                <h3 class="font-bold mb-4">Nuevo Producto de Canje</h3>
+                <h3 class="font-bold text-sm text-slate-400 uppercase mb-4"><i class="fa-solid fa-tag mr-2"></i>Nuevo Producto de Canje</h3>
                 <div class="space-y-3">
-                    <input type="text" id="new-prod-name" placeholder="Nombre (Ej: Corte Gratis)" class="w-full px-4 py-2 border rounded-lg">
-                    <input type="number" id="new-prod-points" placeholder="Puntos necesarios" class="w-full px-4 py-2 border rounded-lg">
-                    <button onclick="saveProduct()" class="w-full py-2 bg-emerald-600 text-white rounded-lg font-bold">Guardar Producto</button>
+                    <input type="text" id="admin-prod-name" placeholder="Nombre (Ej: Corte Gratis)" class="w-full p-3 bg-slate-50 rounded-xl outline-none border border-transparent focus:border-indigo-500">
+                    <input type="number" id="admin-prod-pts" placeholder="Puntos necesarios" class="w-full p-3 bg-slate-50 rounded-xl outline-none border border-transparent focus:border-indigo-500">
+                    <button id="btn-save-prod" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl text-sm hover:bg-indigo-700">Agregar al Catálogo</button>
                 </div>
             </div>
 
-            <div class="minimal-card p-6 overflow-hidden">
-                <h3 class="font-bold mb-4">Listado de Clientes</h3>
-                <div id="clients-list" class="space-y-4 max-h-96 overflow-y-auto">
+            <div class="minimal-card p-6">
+                <h3 class="font-bold text-sm text-slate-400 uppercase mb-4"><i class="fa-solid fa-users mr-2"></i>Gestión de Clientes</h3>
+                <div id="admin-clients-list" class="space-y-3">
                     </div>
             </div>
         </section>
 
-        <section id="client-view" class="hidden space-y-6">
-            <div class="minimal-card p-8 text-center bg-indigo-600 text-white">
-                <p class="text-indigo-100 text-sm uppercase tracking-widest mb-2">Tus Puntos</p>
-                <h2 id="client-points-display" class="text-6xl font-black">0</h2>
+        <section id="view-client" class="hidden space-y-6">
+            <div class="bg-gradient-custom p-10 rounded-[32px] text-center text-white shadow-2xl relative overflow-hidden">
+                <p class="text-indigo-300 text-xs font-bold uppercase tracking-[0.2em] mb-2">Puntos Disponibles</p>
+                <h2 id="client-points-display" class="text-7xl font-black">0</h2>
+                <div class="absolute -bottom-4 -right-4 text-white/5 text-8xl"><i class="fa-solid fa-star"></i></div>
             </div>
-            <div id="rewards-container" class="grid grid-cols-1 gap-4">
+            <div id="rewards-list" class="grid grid-cols-1 gap-4">
                 </div>
         </section>
 
@@ -82,107 +90,143 @@
         import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            // PEGA AQUÍ TU CONFIGURACIÓN DE FIREBASE
+            // PEGA AQUÍ TUS CREDENCIALES
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        window.db = db;
 
-        // --- SEGURIDAD ---
-        const MASTER_KEY = "199819";
+        const MASTER_KEY = "199819"; // Clave para borrar clientes/productos
 
-        // --- MANEJO DE VISTAS ---
-        function showView(viewId) {
+        // --- FUNCIONES DE NAVEGACIÓN ---
+        function showSection(id) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(viewId).classList.remove('hidden');
+            document.getElementById(id).classList.remove('hidden');
         }
 
-        // --- AUTENTICACIÓN ---
-        window.handleAuth = async function() {
-            const user = document.getElementById('login-user').value;
-            const pass = document.getElementById('login-pass').value;
+        // --- LÓGICA DE LOGIN ---
+        window.handleLogin = async () => {
+            const u = document.getElementById('auth-user').value.trim();
+            const p = document.getElementById('auth-pass').value.trim();
 
-            if (user === "josefrank" && pass === "199818") {
-                showView('admin-view');
+            if (u === "josefrank" && p === "199818") {
+                showSection('view-admin');
                 loadAdminData();
-            } else if (user === "cajero" && pass === "cajero123") {
-                showView('cashier-view');
+            } else if (u === "cajero" && p === "cajero123") {
+                showSection('view-cashier');
             } else {
-                // Lógica para buscar cliente por teléfono
-                const q = query(collection(db, "clients"), where("phone", "==", user));
+                // Login de Cliente
+                const q = query(collection(db, "clients"), where("phone", "==", u));
                 const snap = await getDocs(q);
                 if (!snap.empty) {
                     window.activeClient = { id: snap.docs[0].id, ...snap.docs[0].data() };
-                    showView('client-view');
+                    document.getElementById('client-points-display').innerText = window.activeClient.points;
+                    showSection('view-client');
                     loadRewards();
                 } else {
-                    alert("Usuario no encontrado.");
+                    alert("Usuario o Teléfono no registrado.");
                 }
             }
         };
 
-        // --- FUNCIONES ADMIN ---
-        window.saveProduct = async function() {
-            const name = document.getElementById('new-prod-name').value;
-            const points = parseInt(document.getElementById('new-prod-points').value);
-            if (!name || !points) return alert("Llena los campos");
+        // --- MÓDULO CAJERO ---
+        window.createTicketQR = () => {
+            const raw = document.getElementById('bill-input').value;
+            const pts = Math.floor(parseFloat(raw)); // Redondeo hacia abajo: 11.50 -> 11
+            if (!pts || pts <= 0) return alert("Ingresa un monto válido");
 
-            await addDoc(collection(db, "products"), { name, points });
-            alert("Producto agregado");
-            location.reload();
+            const qrData = JSON.stringify({ t: Date.now(), p: pts });
+            const url = `https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=${encodeURIComponent(qrData)}`;
+            
+            document.getElementById('qr-target').innerHTML = `<img src="${url}" class="rounded-xl shadow-lg">`;
+            document.getElementById('qr-pts-label').innerText = `${pts} PUNTOS GENERADOS`;
+            document.getElementById('qr-display').classList.remove('hidden');
         };
 
-        window.deleteClient = async function(id) {
-            const check = prompt("Ingrese clave de seguridad para eliminar:");
-            if (check === MASTER_KEY) {
+        // --- MÓDULO ADMIN ---
+        window.saveReward = async () => {
+            const name = document.getElementById('admin-prod-name').value;
+            const pts = parseInt(document.getElementById('admin-prod-pts').value);
+            if (!name || !pts) return alert("Completa los datos del producto.");
+
+            await addDoc(collection(db, "products"), { name, points: pts });
+            alert("Producto añadido al catálogo");
+            document.getElementById('admin-prod-name').value = '';
+            document.getElementById('admin-prod-pts').value = '';
+        };
+
+        window.deleteClient = async (id) => {
+            const pass = prompt("🔐 INGRESE CLAVE DE SEGURIDAD PARA BORRAR:");
+            if (pass === MASTER_KEY) {
                 await deleteDoc(doc(db, "clients", id));
-                alert("Cliente eliminado");
-            } else {
-                alert("Clave incorrecta");
+                alert("Cliente eliminado.");
+            } else if (pass !== null) {
+                alert("❌ Clave incorrecta.");
             }
         };
 
-        window.sendWhatsApp = function(phone, name) {
-            const msg = `¡Hola ${name}! Tienes puntos acumulados en la barbería. ¡Ven hoy a canjearlos!`;
-            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`);
+        window.sendWhatsApp = (phone, name) => {
+            const msg = `¡Hola ${name}! 💈 Tienes puntos acumulados en la barbería. ¡Ven a canjearlos hoy mismo!`;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
         };
 
-        async function loadAdminData() {
-            const container = document.getElementById('clients-list');
+        function loadAdminData() {
             onSnapshot(collection(db, "clients"), (snap) => {
-                container.innerHTML = '';
+                const list = document.getElementById('admin-clients-list');
+                list.innerHTML = '';
                 snap.forEach(d => {
                     const c = d.data();
-                    container.innerHTML += `
-                        <div class="flex justify-between items-center p-3 border-b">
-                            <div>
-                                <p class="font-bold">${c.name}</p>
-                                <p class="text-xs text-slate-500">${c.points} pts</p>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="sendWhatsApp('${c.phone}', '${c.name}')" class="text-emerald-600 p-2"><i class="fa-brands fa-whatsapp"></i></button>
-                                <button onclick="deleteClient('${d.id}')" class="text-rose-600 p-2"><i class="fa-solid fa-trash"></i></button>
+                    list.innerHTML += `
+                        <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div><p class="font-black text-slate-800">${c.name}</p><p class="text-xs font-bold text-indigo-600">${c.points} PTS</p></div>
+                            <div class="flex gap-1">
+                                <button onclick="sendWhatsApp('${c.phone}', '${c.name}')" class="w-10 h-10 text-emerald-600 bg-white rounded-xl shadow-sm flex items-center justify-center"><i class="fa-brands fa-whatsapp text-lg"></i></button>
+                                <button onclick="deleteClient('${d.id}')" class="w-10 h-10 text-rose-500 bg-white rounded-xl shadow-sm flex items-center justify-center"><i class="fa-solid fa-trash-can text-sm"></i></button>
                             </div>
                         </div>`;
                 });
             });
         }
 
-        // --- FUNCIONES CAJERO ---
-        window.generateTicketQR = function() {
-            const amount = Math.floor(document.getElementById('bill-amount').value);
-            if (amount <= 0) return alert("Monto inválido");
-            
-            const qrContainer = document.getElementById('qrcode-container');
-            qrContainer.innerHTML = ''; // Limpiar anterior
-            const code = `TICKET-${Date.now()}-${amount}`;
-            
-            // Aquí usarías tu librería de QR (ej. QRCode.js)
-            qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${code}" />`;
-            document.getElementById('qr-value-label').innerText = `${amount} Puntos`;
-            document.getElementById('qr-result').classList.remove('hidden');
+        // --- MÓDULO CLIENTE (RECOMPENSAS) ---
+        async function loadRewards() {
+            const container = document.getElementById('rewards-list');
+            const snap = await getDocs(collection(db, "products"));
+            container.innerHTML = '';
+            snap.forEach(d => {
+                const p = d.data();
+                const canAfford = window.activeClient.points >= p.points;
+                container.innerHTML += `
+                    <div class="minimal-card p-5 flex justify-between items-center ${!canAfford ? 'opacity-50' : ''}">
+                        <div><p class="font-black text-slate-800">${p.name}</p><p class="text-sm font-bold text-indigo-600">${p.points} Puntos</p></div>
+                        <button onclick="redeemReward('${d.id}', '${p.name}', ${p.points})" 
+                                class="px-5 py-2 rounded-xl font-bold text-xs uppercase transition-all 
+                                ${canAfford ? 'bg-slate-900 text-white active:scale-95' : 'bg-slate-100 text-slate-400'}" 
+                                ${!canAfford ? 'disabled' : ''}>Canjear</button>
+                    </div>`;
+            });
+        }
+
+        window.redeemReward = async (id, name, cost) => {
+            if (confirm(`¿Canjear ${name} por ${cost} puntos?`)) {
+                const newTotal = window.activeClient.points - cost;
+                await updateDoc(doc(db, "clients", window.activeClient.id), { points: newTotal });
+                window.activeClient.points = newTotal;
+                document.getElementById('client-points-display').innerText = newTotal;
+                alert("¡Canje Exitoso! Muestra esta pantalla en caja.");
+                loadRewards();
+            }
         };
+
+        // --- VÍNCULO DE EVENTOS (Arreglo del Login) ---
+        document.getElementById('btn-login').addEventListener('click', window.handleLogin);
+        document.getElementById('btn-create-qr').addEventListener('click', window.createTicketQR);
+        document.getElementById('btn-save-prod').addEventListener('click', window.saveReward);
+
+        // Exponer funciones necesarias para los 'onclick' del HTML generado
+        window.sendWhatsApp = sendWhatsApp;
+        window.deleteClient = deleteClient;
+        window.redeemReward = redeemReward;
 
     </script>
 </body>
