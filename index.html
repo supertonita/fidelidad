@@ -9,122 +9,119 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        .minimal-card {
-            background: rgba(246, 248, 250, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            border-radius: 16px;
+        /* MANTENEMOS TU DISEÑO GLASSMORPHISM */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
         }
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .bg-gradient {
+            background: radial-gradient(circle at top right, #f8fafc, #e2e8f0);
+            min-h-screen;
+        }
     </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen">
+<body class="bg-gradient font-sans text-slate-800">
 
-    <header class="bg-white/80 backdrop-blur-md border-b border-slate-100 py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <h1 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <i class="fa-solid fa-star text-amber-500"></i> SUPER TOÑITA
-            </h1>
-            <div class="flex gap-2">
-                <button id="btn-nav-auth" onclick="switchView('auth')" class="px-4 py-2 text-sm font-medium rounded-full bg-slate-900 text-white">Acceso</button>
-                <button id="btn-nav-client" onclick="switchView('client')" class="hidden px-4 py-2 text-sm font-medium rounded-full bg-slate-100">Mi Perfil</button>
-                <button id="btn-nav-admin" onclick="switchView('admin')" class="hidden px-4 py-2 text-sm font-medium rounded-full bg-slate-100 font-bold text-indigo-600">Admin</button>
-                <button id="btn-logout" onclick="logout()" class="hidden px-4 py-2 text-sm font-medium rounded-full text-rose-600 bg-rose-50"><i class="fa-solid fa-power-off"></i></button>
-            </div>
+    <!-- HEADER ORIGINAL -->
+    <header class="p-6 flex justify-between items-center max-w-4xl mx-auto">
+        <h1 class="text-2xl font-black tracking-tighter text-slate-900 italic">SUPER TOÑITA</h1>
+        <div class="flex gap-2">
+            <button id="btn-nav-admin" onclick="switchView('admin')" class="hidden px-4 py-2 text-xs font-bold bg-white rounded-full shadow-sm">ADMIN</button>
+            <button id="btn-logout" onclick="location.reload()" class="hidden px-4 py-2 text-xs font-bold bg-rose-50 text-rose-600 rounded-full">SALIR</button>
         </div>
     </header>
 
-    <main class="max-w-4xl w-full mx-auto px-4 py-6">
-
-        <!-- LOGIN -->
-        <section id="auth-view" class="max-w-md mx-auto pt-10">
-            <div class="minimal-card p-8 text-center">
-                <h3 class="text-2xl font-bold mb-6">Iniciar Sesión</h3>
-                <div class="space-y-4">
-                    <input type="text" id="login-identifier" placeholder="Nombre" class="w-full px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
-                    <input type="text" id="login-secret" placeholder="Teléfono" class="w-full px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
-                    <button onclick="handleLogin()" class="w-full py-4 bg-slate-900 text-white font-bold rounded-xl">ENTRAR</button>
-                </div>
+    <main class="max-w-4xl mx-auto px-4 pb-10">
+        
+        <!-- VISTA AUTH -->
+        <section id="auth-view" class="pt-10 max-w-md mx-auto">
+            <div class="glass-card p-10 text-center">
+                <h2 class="text-3xl font-black mb-8">Bienvenido, parce</h2>
+                <input type="text" id="login-identifier" placeholder="Tu Nombre" class="w-full p-4 mb-4 rounded-2xl bg-white/50 border-none focus:ring-2 focus:ring-indigo-400 outline-none">
+                <input type="text" id="login-secret" placeholder="Tu Teléfono" class="w-full p-4 mb-6 rounded-2xl bg-white/50 border-none focus:ring-2 focus:ring-indigo-400 outline-none">
+                <button onclick="handleLogin()" class="w-full py-4 bg-slate-900 text-white font-black rounded-2xl hover:scale-[1.02] transition-all">ENTRAR</button>
             </div>
         </section>
 
         <!-- VISTA CLIENTE -->
         <section id="client-view" class="hidden space-y-6">
-            <div class="minimal-card p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="glass-card p-8 flex justify-between items-center border-b-4 border-indigo-500">
                 <div>
-                    <h2 class="text-2xl font-black text-slate-900" id="client-name">...</h2>
-                    <p class="text-slate-500 text-sm" id="client-phone-display"></p>
+                    <h2 id="client-name" class="text-3xl font-black">...</h2>
+                    <p id="client-phone-display" class="text-slate-500 font-bold"></p>
                 </div>
-                <div class="bg-indigo-600 px-8 py-4 rounded-3xl text-white text-center">
-                    <span class="text-[10px] uppercase font-bold">Puntos</span>
-                    <span class="text-4xl font-black block" id="client-points">0</span>
+                <div class="text-right">
+                    <p class="text-[10px] font-black uppercase text-indigo-600">Puntos Totales</p>
+                    <p id="client-points" class="text-5xl font-black">0</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Canjes Cliente -->
-                <div class="minimal-card p-6">
-                    <h3 class="font-bold mb-4 text-emerald-600"><i class="fa-solid fa-history"></i> Mis Canjes Realizados</h3>
-                    <div id="client-redemptions-list" class="space-y-3 max-h-64 overflow-y-auto custom-scroll pr-2">
-                        <!-- Aquí se verán los canjes del cliente -->
+                <!-- HISTORIAL DE CANJES (LO QUE NO SE VEÍA) -->
+                <div class="glass-card p-6">
+                    <h3 class="font-black mb-4 text-xs uppercase tracking-widest"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Mis Canjes</h3>
+                    <div id="client-redemptions-list" class="space-y-3 max-h-60 overflow-y-auto">
+                        <!-- Aquí aparecerán los canjes -->
                     </div>
                 </div>
 
-                <!-- Escáner -->
-                <div class="minimal-card p-6">
-                    <h3 class="font-bold mb-4">Sumar Puntos</h3>
-                    <button onclick="startCameraScanner()" class="w-full py-3 border-2 border-dashed border-indigo-200 text-indigo-600 rounded-xl font-bold mb-3">Escanea QR</button>
-                    <div id="qr-reader" class="hidden mb-4 border rounded-xl overflow-hidden"></div>
-                    <div class="flex gap-2">
-                        <input type="text" id="qr-input" placeholder="O pega el código" class="w-full px-4 py-3 border rounded-xl text-sm">
-                        <button onclick="claimPoints()" class="bg-indigo-600 text-white px-4 rounded-xl font-bold">OK</button>
-                    </div>
+                <div class="glass-card p-6 text-center">
+                    <h3 class="font-black mb-4 text-xs uppercase">Sumar Puntos</h3>
+                    <button onclick="startScanner()" class="w-full py-4 border-2 border-dashed border-slate-300 rounded-3xl font-bold text-slate-500 hover:bg-white/50">Abrir Cámara</button>
+                    <div id="reader" class="mt-4 hidden rounded-2xl overflow-hidden"></div>
                 </div>
             </div>
 
-            <div class="minimal-card p-6">
-                <h3 class="text-xl font-bold mb-6">Premios para Ti</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="client-rewards-container"></div>
+            <div id="client-rewards-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
+                <!-- Premios -->
             </div>
         </section>
 
         <!-- VISTA ADMIN -->
         <section id="admin-view" class="hidden space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Panel de Entregas Admin -->
-                <div class="minimal-card p-6 border-l-4 border-amber-500">
-                    <h3 class="font-bold mb-4 flex justify-between uppercase text-xs">
-                        Canjes por Entregar <span id="admin-pending-count" class="bg-amber-100 text-amber-700 px-2 rounded">0</span>
+                <!-- PENDIENTES ADMIN -->
+                <div class="glass-card p-6 border-l-8 border-amber-400">
+                    <h3 class="font-black mb-4 text-xs uppercase flex justify-between">
+                        Entregas Pendientes <span id="admin-pending-count" class="bg-amber-400 text-white px-2 rounded">0</span>
                     </h3>
-                    <div class="space-y-3 max-h-80 overflow-y-auto custom-scroll" id="admin-pending-redemptions">
-                        <!-- Aquí se verán los canjes para el admin -->
-                    </div>
+                    <div id="admin-pending-redemptions" class="space-y-3"></div>
                 </div>
-                <!-- Generador QR -->
-                <div class="minimal-card p-6">
-                    <h3 class="font-bold mb-4 text-xs uppercase">Generar Ticket</h3>
-                    <input type="number" id="qr-bill-amount" placeholder="Monto $" class="w-full px-4 py-3 border rounded-xl mb-3">
-                    <button onclick="generateQRCodes()" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold">Crear QR</button>
-                    <div id="qr-points-container" class="mt-4 flex justify-center"></div>
+
+                <div class="glass-card p-6">
+                    <h3 class="font-black mb-4 text-xs uppercase text-slate-400">Generar Código</h3>
+                    <input type="number" id="qr-amount" placeholder="Valor de venta" class="w-full p-4 mb-4 rounded-2xl bg-slate-100 border-none outline-none">
+                    <button onclick="generateQR()" class="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl">Crear Ticket</button>
+                    <div id="qr-result" class="mt-4 flex justify-center p-4 bg-white rounded-2xl"></div>
                 </div>
             </div>
-            
-            <div class="minimal-card p-6">
-                <h3 class="font-bold mb-4 text-xs uppercase">Lista de Clientes</h3>
+
+            <!-- TU TABLA ORIGINAL CON BOTONES WHATSAPP Y ELIMINAR -->
+            <div class="glass-card p-6">
+                <h3 class="font-black mb-4 text-xs uppercase">Gestión de Clientes</h3>
                 <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-[10px] text-slate-400 border-b">
+                                <th class="pb-4">CLIENTE</th>
+                                <th class="pb-4 text-center">PUNTOS</th>
+                                <th class="pb-4 text-right">ACCIONES</th>
+                            </tr>
+                        </thead>
                         <tbody id="admin-clients-table"></tbody>
                     </table>
                 </div>
             </div>
         </section>
+
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCahZbwdPB5zBR_rdxTp4RIRmUoiGkyUOk",
@@ -139,82 +136,82 @@
         const db = getFirestore(app);
         window.db = db;
 
-        // CARGA REALTIME
+        // --- FUNCION DE CANJE CORREGIDA (PARA QUE SE MUESTRE) ---
+        window.redeemProduct = async (prodName, pointsCost) => {
+            if (window.activeClient.points < pointsCost) return alert("No tienes suficientes puntos, parce.");
+            
+            if (confirm(`¿Canjear ${prodName} por ${pointsCost} puntos?`)) {
+                try {
+                    // 1. Restar puntos al cliente
+                    const clientRef = doc(db, "clients", window.activeClient.id);
+                    await updateDoc(clientRef, { points: window.activeClient.points - pointsCost });
+
+                    // 2. CREAR EL REGISTRO EN 'redemptions' (Esto era lo que faltaba o fallaba)
+                    await addDoc(collection(db, "redemptions"), {
+                        clientName: window.activeClient.name,
+                        clientPhone: window.activeClient.phone,
+                        productName: prodName,
+                        status: "pendiente",
+                        date: new Date().toLocaleString(),
+                        createdAt: Date.now()
+                    });
+
+                    alert("¡Canje solicitado con éxito!");
+                } catch (e) {
+                    alert("Error al procesar: " + e.message);
+                }
+            }
+        };
+
+        // --- LISTENERS EN TIEMPO REAL ---
         onSnapshot(collection(db, "products"), (s) => {
             window.availableProducts = s.docs.map(d => ({id: d.id, ...d.data()}));
-            window.renderProducts();
+            renderProducts();
         });
 
         onSnapshot(collection(db, "clients"), (s) => {
             window.registeredClients = s.docs.map(d => ({id: d.id, ...d.data()}));
-            window.updateClientsTable();
+            updateAdminTable();
             if(window.activeClient) {
                 const me = window.registeredClients.find(c => c.phone === window.activeClient.phone);
-                if(me) { 
-                    window.activeClient = me; 
+                if(me) {
+                    window.activeClient = me;
                     document.getElementById('client-points').innerText = me.points;
                 }
             }
         });
 
-        // EL MOTOR DE LOS CANJES (Vigila la colección 'redemptions')
+        // LISTENER DE CANJES (CLAVE PARA EL HISTORIAL)
         onSnapshot(collection(db, "redemptions"), (s) => {
-            window.allRedemptions = s.docs.map(d => ({id: d.id, ...d.data()}));
-            window.renderRedemptions();
+            window.allRedemptions = s.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => b.createdAt - a.createdAt);
+            renderRedemptions();
         });
 
-        window.processRedeem = async (prodName, cost) => {
-            try {
-                // 1. Restar puntos al cliente
-                const clientRef = doc(db, "clients", window.activeClient.id);
-                await updateDoc(clientRef, { points: window.activeClient.points - cost });
-
-                // 2. Crear el canje (IMPORTANTE: Esto debe crearse para que aparezca)
-                await addDoc(collection(db, "redemptions"), {
-                    clientName: window.activeClient.name,
-                    clientPhone: window.activeClient.phone,
-                    productName: prodName,
-                    status: "pendiente",
-                    date: new Date().toLocaleString(),
-                    createdAt: Date.now()
-                });
-
-                alert("¡Canje registrado con éxito!");
-            } catch (error) {
-                console.error(error);
-                alert("Error al canjear. Asegúrate de que la colección 'redemptions' existe en Firebase.");
-            }
-        };
-
-        window.deliverProduct = async (id) => {
-            await updateDoc(doc(db, "redemptions", id), { status: "entregado" });
-        };
+        window.deleteClient = async (id) => { if(confirm("¿Eliminar cliente?")) await deleteDoc(doc(db, "clients", id)); };
+        window.deliverItem = async (id) => { await updateDoc(doc(db, "redemptions", id), { status: "entregado" }); };
     </script>
 
     <script>
         window.activeClient = null;
         window.allRedemptions = [];
 
-        function switchView(view) {
+        function switchView(v) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(view + '-view').classList.remove('hidden');
-            document.getElementById('btn-nav-auth').classList.toggle('hidden', view !== 'auth');
-            document.getElementById('btn-nav-client').classList.toggle('hidden', !window.activeClient && view === 'auth');
-            document.getElementById('btn-nav-admin').classList.toggle('hidden', view !== 'admin' && !window.isAdmin);
-            document.getElementById('btn-logout').classList.toggle('hidden', view === 'auth');
-            window.renderRedemptions();
+            document.getElementById(v + '-view').classList.remove('hidden');
+            document.getElementById('btn-nav-admin').classList.toggle('hidden', v === 'auth');
+            document.getElementById('btn-logout').classList.toggle('hidden', v === 'auth');
         }
 
         async function handleLogin() {
-            const user = document.getElementById('login-identifier').value.trim();
+            const name = document.getElementById('login-identifier').value.trim();
             const phone = document.getElementById('login-secret').value.trim();
-            if(user === "josefrank" && phone === "199818") { window.isAdmin = true; switchView('admin'); return; }
+            if(name === "josefrank" && phone === "199818") { switchView('admin'); return; }
             
             let client = window.registeredClients.find(c => c.phone === phone);
             if(!client) {
                 const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-                const docRef = await addDoc(collection(window.db, "clients"), { name: user, phone: phone, points: 100 });
-                client = { id: docRef.id, name: user, phone: phone, points: 100 };
+                const docRef = await addDoc(collection(window.db, "clients"), { name, phone, points: 50 });
+                client = { id: docRef.id, name, phone, points: 50 };
             }
             window.activeClient = client;
             document.getElementById('client-name').innerText = client.name;
@@ -222,58 +219,61 @@
             switchView('client');
         }
 
-        window.renderRedemptions = () => {
-            // HISTORIAL CLIENTE
-            const cList = document.getElementById('client-redemptions-list');
-            if(cList && window.activeClient) {
-                const mine = window.allRedemptions.filter(r => r.clientPhone === window.activeClient.phone)
-                             .sort((a,b) => b.createdAt - a.createdAt);
+        function renderRedemptions() {
+            // Historial Cliente
+            if(window.activeClient) {
+                const cList = document.getElementById('client-redemptions-list');
+                const mine = window.allRedemptions.filter(r => r.clientPhone === window.activeClient.phone);
                 cList.innerHTML = mine.map(r => `
-                    <div class="p-3 bg-white border rounded-xl flex justify-between items-center shadow-sm">
-                        <div><p class="font-bold text-sm">${r.productName}</p><p class="text-[10px] text-slate-400">${r.date}</p></div>
-                        <span class="text-[9px] font-bold px-2 py-1 rounded-full ${r.status==='pendiente'?'bg-amber-100 text-amber-600':'bg-emerald-100 text-emerald-600'}">${r.status.toUpperCase()}</span>
+                    <div class="p-3 bg-white/50 rounded-xl flex justify-between items-center text-xs">
+                        <div><b>${r.productName}</b><br><span class="text-slate-400">${r.date}</span></div>
+                        <span class="font-black ${r.status === 'pendiente' ? 'text-amber-500' : 'text-emerald-500'}">${r.status.toUpperCase()}</span>
                     </div>
-                `).join('') || '<p class="text-center text-xs text-slate-400">Sin canjes.</p>';
+                `).join('') || '<p class="text-center text-xs text-slate-400">No has hecho canjes.</p>';
             }
 
-            // PANEL ADMIN
+            // Panel Admin
             const aList = document.getElementById('admin-pending-redemptions');
-            if(aList) {
-                const pending = window.allRedemptions.filter(r => r.status === "pendiente");
-                document.getElementById('admin-pending-count').innerText = pending.length;
-                aList.innerHTML = pending.map(r => `
-                    <div class="p-3 bg-white border rounded-xl flex justify-between items-center shadow-sm">
-                        <div><p class="text-sm font-bold">${r.productName}</p><p class="text-[10px] font-bold text-indigo-600">${r.clientName}</p></div>
-                        <button onclick="deliverProduct('${r.id}')" class="bg-emerald-500 text-white px-3 py-1 rounded-lg text-[10px] font-bold">ENTREGAR</button>
-                    </div>
-                `).join('') || '<p class="text-center text-xs text-slate-400">Todo entregado.</p>';
-            }
-        };
+            const pending = window.allRedemptions.filter(r => r.status === "pendiente");
+            document.getElementById('admin-pending-count').innerText = pending.length;
+            aList.innerHTML = pending.map(r => `
+                <div class="p-3 bg-white rounded-xl flex justify-between items-center shadow-sm">
+                    <div class="text-xs"><b>${r.productName}</b><br><span class="text-indigo-600 font-bold">${r.clientName}</span></div>
+                    <button onclick="deliverItem('${r.id}')" class="bg-emerald-500 text-white px-3 py-1 rounded-lg text-[10px] font-black">ENTREGAR</button>
+                </div>
+            `).join('') || '<p class="text-center text-xs text-slate-400">Nada pendiente.</p>';
+        }
 
-        window.renderProducts = () => {
+        function renderProducts() {
             const cont = document.getElementById('client-rewards-container');
-            if(cont) cont.innerHTML = window.availableProducts.map(p => `
-                <div class="p-4 bg-white border border-slate-100 rounded-2xl flex justify-between items-center shadow-sm">
-                    <div><p class="font-bold">${p.name}</p><p class="text-xs text-indigo-500 font-bold">${p.points} PTS</p></div>
-                    <button onclick="window.processRedeem('${p.name}', ${p.points})" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold">CANJEAR</button>
-                </div>`).join('');
-        };
-
-        window.updateClientsTable = () => {
-            const tb = document.getElementById('admin-clients-table');
-            if(tb) tb.innerHTML = window.registeredClients.map(c => `
-                <tr class="border-b"><td class="py-3 font-bold">${c.name}<br><span class="text-xs font-normal text-slate-400">${c.phone}</span></td><td class="text-right font-bold text-indigo-600">${c.points} pts</td></tr>
+            cont.innerHTML = window.availableProducts.map(p => `
+                <div class="glass-card p-6 flex justify-between items-center">
+                    <div><p class="font-black text-slate-900">${p.name}</p><p class="text-xs font-bold text-indigo-600">${p.points} PUNTOS</p></div>
+                    <button onclick="redeemProduct('${p.name}', ${p.points})" class="bg-slate-900 text-white px-6 py-2 rounded-xl text-xs font-black">CANJEAR</button>
+                </div>
             `).join('');
-        };
+        }
 
-        function logout() { location.reload(); }
+        function updateAdminTable() {
+            const tbody = document.getElementById('admin-clients-table');
+            tbody.innerHTML = window.registeredClients.map(c => `
+                <tr class="border-b last:border-0">
+                    <td class="py-4"><p class="font-black text-sm">${c.name}</p><p class="text-[10px] text-slate-400">${c.phone}</p></td>
+                    <td class="text-center font-black text-indigo-600">${c.points}</td>
+                    <td class="text-right">
+                        <button onclick="window.open('https://wa.me/${c.phone}')" class="text-emerald-500 p-2"><i class="fa-brands fa-whatsapp"></i></button>
+                        <button onclick="deleteClient('${c.id}')" class="text-rose-500 p-2"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
 
-        // QR LOGIC (Simplificada)
-        function generateQRCodes() {
-            const amt = document.getElementById('qr-bill-amount').value;
-            if(!amt) return;
-            document.getElementById('qr-points-container').innerHTML = '';
-            new QRCode(document.getElementById('qr-points-container'), { text: JSON.stringify({pts: Math.floor(amt), id: Date.now()}), width: 120, height: 120 });
+        // QR LOGIC
+        function generateQR() {
+            const val = document.getElementById('qr-amount').value;
+            if(!val) return;
+            document.getElementById('qr-result').innerHTML = '';
+            new QRCode(document.getElementById('qr-result'), { text: JSON.stringify({pts: Math.floor(val), id: Date.now()}), width: 120, height: 120 });
         }
     </script>
 </body>
