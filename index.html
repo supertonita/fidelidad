@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         .minimal-card {
-            background: rgba(246, 248, 250, 0.95);
+            background: rgba(228, 229, 230, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(0, 0, 0, 0.05);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
@@ -23,12 +23,12 @@
     <header class="bg-white/80 backdrop-blur-md border-b border-slate-100 py-4 px-6 sticky top-0 z-10">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <h1 class="text-lg font-semibold tracking-tight text-slate-900 flex items-center gap-2">
-                <i class="fa-solid fa-star text-amber-500"></i> SUPER TOÑITA
+                <i class="fa-solid fa-star text-amber-500"></i><span id="user-role-indicator" class="text-xs bg-slate-100 px-2 py-0.5 rounded-full text-slate-500 hidden"></span>
             </h1>
             <div class="flex gap-3">
                 <button id="btn-nav-auth" onclick="switchView('auth')" class="px-4 py-2 text-sm font-medium rounded-full bg-slate-900 text-white hover:bg-slate-800 transition-colors">Acceso</button>
                 <button id="btn-nav-client" onclick="switchView('client')" class="hidden px-4 py-2 text-sm font-medium rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">Mi Perfil</button>
-                <button id="btn-nav-admin" onclick="switchView('admin')" class="hidden px-4 py-2 text-sm font-medium rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">Panel Admin</button>
+                <button id="btn-nav-admin" onclick="switchView('admin')" class="hidden px-4 py-2 text-sm font-medium rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">Panel Control</button>
                 <button id="btn-logout" onclick="logout()" class="hidden px-4 py-2 text-sm font-medium rounded-full text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors">Salir</button>
             </div>
         </div>
@@ -36,20 +36,18 @@
 
     <main class="flex-grow max-w-4xl w-full mx-auto px-6 py-8">
 
-        <!-- VISTA AUTH -->
         <section id="auth-view" class="space-y-6 max-w-md mx-auto">
             <div class="minimal-card p-8 text-center">
-                <i class="fa-solid fa-user-circle text-4xl text-indigo-600 mb-2"></i>
+                <h3 class="text-xl font-bold text-slate-900">BIENVENIDO A</h3>
                 <h3 class="text-xl font-bold text-slate-900">SUPER TOÑITA CORINTO</h3>
                 <div class="space-y-4 mt-6">
-                    <input type="text" id="login-identifier" placeholder="Tu Nombre" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white">
-                    <input type="text" id="login-secret" placeholder="Teléfono (Ej: 77771234)" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white">
+                    <input type="text" id="login-identifier" placeholder="Tu Nombre " class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white">
+                    <input type="text" id="login-secret" placeholder="Teléfono" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white">
                     <button onclick="handleLogin()" class="w-full py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-all">Ingresar</button>
                 </div>
             </div>
         </section>
 
-        <!-- VISTA CLIENTE -->
         <section id="client-view" class="hidden space-y-6">
             <div class="minimal-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
                 <div>
@@ -73,7 +71,7 @@
                     </div>
                 </div>
                 <div class="minimal-card p-6">
-                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-emerald-600"><i class="fa-solid fa-ticket"></i> Mis Cupones</h3>
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-emerald-600"><i class="fa-solid fa-ticket"></i> Mis Cupones y Historial</h3>
                     <div id="client-redemptions-list" class="space-y-3 max-h-60 overflow-y-auto pr-2 text-xs"></div>
                 </div>
             </div>
@@ -84,9 +82,8 @@
             </div>
         </section>
 
-        <!-- VISTA ADMIN -->
         <section id="admin-view" class="hidden space-y-6">
-            <!-- Puntos e Impresión -->
+            
             <div class="minimal-card p-8">
                 <h3 class="text-xl font-bold text-slate-900 mb-6">Generador de Ticket</h3>
                 <div class="flex gap-4 mb-6">
@@ -105,7 +102,6 @@
                 </button>
             </div>
 
-            <!-- Canjes por Entregar -->
             <div class="minimal-card p-8">
                 <h3 class="text-xl font-bold text-slate-900 mb-6 flex justify-between">Canjes por Entregar <span id="admin-pending-count" class="text-amber-600">0</span></h3>
                 <div class="overflow-x-auto">
@@ -115,28 +111,42 @@
                 </div>
             </div>
 
-            <!-- TABLA DE CLIENTES (CORREGIDA) -->
-            <div class="minimal-card p-8">
-                <h3 class="text-xl font-bold text-slate-900 mb-6">Clientes Registrados</h3>
-                <div class="overflow-x-auto">
+            <div id="section-admin-clients" class="minimal-card p-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <h3 class="text-xl font-bold text-slate-900">Control de Clientes</h3>
+                    <select id="client-behavior-filter" onchange="window.updateClientsTable()" class="px-3 py-2 border border-slate-200 rounded-xl bg-white text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="todos">📋 Mostrar Todos los Clientes</option>
+                        <option value="mas_canjes">🔥 Clientes con Más Canjes (Top)</option>
+                        <option value="frecuente">💎 Clientes Frecuentes (Puntos > 300)</option>
+                        <option value="poco_frecuente">⚠️ Clientes Poco Frecuentes (Puntos ≤ 300)</option>
+                    </select>
+                </div>
+                <div class="overflow-x-auto mb-4">
                     <table class="min-w-full">
                         <thead>
                             <tr class="text-xs text-slate-400 uppercase border-b">
                                 <th class="pb-2 text-left">Nombre / Tel</th>
-                                <th class="pb-2 text-center">Puntos</th>
+                                <th class="pb-2 text-center">Puntos Actuales</th>
                                 <th class="pb-2 text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="admin-clients-table"></tbody>
                     </table>
                 </div>
+
+                <div id="admin-client-history-section" class="hidden p-4 border border-indigo-100 bg-indigo-50/30 rounded-xl mt-4">
+                    <h4 class="font-bold text-sm text-indigo-900 mb-2 flex justify-between items-center">
+                        <span>Historial Completo: <span id="history-client-title" class="text-slate-700"></span></span>
+                        <button onclick="document.getElementById('admin-client-history-section').classList.add('hidden')" class="text-xs text-slate-400 hover:text-slate-600">Cerrar</button>
+                    </h4>
+                    <div id="admin-client-history-list" class="space-y-2 max-h-40 overflow-y-auto text-xs"></div>
+                </div>
             </div>
 
-            <!-- Productos -->
-            <div class="minimal-card p-8">
-                <h3 class="text-xl font-bold text-slate-900 mb-4">Añadir Producto</h3>
+            <div id="section-admin-products" class="minimal-card p-8">
+                <h3 class="text-xl font-bold text-slate-900 mb-4">Añadir Producto al Catálogo</h3>
                 <div class="flex gap-2 mb-6">
-                    <input type="text" id="new-product-name" placeholder="Nombre" class="w-full px-3 py-2 border rounded-lg">
+                    <input type="text" id="new-product-name" placeholder="Nombre de Producto" class="w-full px-3 py-2 border rounded-lg">
                     <input type="number" id="new-product-points" placeholder="Pts" class="w-24 px-3 py-2 border rounded-lg">
                     <button onclick="addProduct()" class="bg-slate-900 text-white px-4 rounded-lg"> + </button>
                 </div>
@@ -161,9 +171,11 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         window.db = db;
-        window.SECURITY_KEY = "1234";
+        window.SECURITY_KEY = "1234"; // Clave compartida para accesos rápidos / cajas
 
-        // Listeners Realtime
+        window.allRedemptions = [];
+
+        // Listeners en Tiempo Real
         onSnapshot(collection(db, "products"), (s) => {
             window.availableProducts = s.docs.map(d => ({id: d.id, ...d.data()}));
             window.renderProducts();
@@ -182,11 +194,11 @@
         });
 
         onSnapshot(collection(db, "redemptions"), (s) => {
-            const redemptions = s.docs.map(d => ({id: d.id, ...d.data()}));
-            window.renderRedemptions(redemptions);
+            window.allRedemptions = s.docs.map(d => ({id: d.id, ...d.data()}));
+            window.renderRedemptions(window.allRedemptions);
+            window.updateClientsTable(); // Actualiza conteos de canjes si cambia algo
         });
 
-        // Funciones CRUD
         window.addProduct = async () => {
             const n = document.getElementById('new-product-name').value;
             const p = parseInt(document.getElementById('new-product-points').value);
@@ -202,13 +214,38 @@
         };
 
         window.deliverProduct = async (id) => {
-            if(confirm("¿Confirmas la entrega?")) await updateDoc(doc(db, "redemptions", id), { status: "entregado" });
+            if(confirm("¿Confirmas la entrega de este premio?")) {
+                // Guarda qué caja o usuario está haciendo la entrega física
+                const deliveredBy = window.currentUserLabel || "Caja General";
+                await updateDoc(doc(db, "redemptions", id), { 
+                    status: "entregado",
+                    deliveredBy: deliveredBy,
+                    deliveryDate: new Date().toLocaleString()
+                });
+            }
+        };
+
+        window.redeemProduct = async (prodId, prodName, cost) => {
+            if(window.activeClient.points < cost) return alert("Puntos insuficientes");
+            if(confirm(`¿Canjear ${prodName}?`)) {
+                await updateDoc(doc(db, "clients", window.activeClient.id), { points: window.activeClient.points - cost });
+                await addDoc(collection(db, "redemptions"), {
+                    clientName: window.activeClient.name,
+                    clientPhone: window.activeClient.phone,
+                    productName: prodName,
+                    status: "pendiente",
+                    date: new Date().toLocaleString(),
+                    deliveredBy: "" // Se llena cuando el cajero lo entrega
+                });
+                alert("¡Canje solicitado!");
+            }
         };
     </script>
 
     <script>
         window.activeClient = null;
         window.isAdminActive = false;
+        window.currentUserLabel = ""; 
 
         function switchView(view) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
@@ -217,32 +254,65 @@
             document.getElementById('btn-nav-client').classList.toggle('hidden', !window.activeClient && !window.isAdminActive);
             document.getElementById('btn-nav-admin').classList.toggle('hidden', !window.isAdminActive);
             document.getElementById('btn-logout').classList.toggle('hidden', view === 'auth');
+            
+            const badge = document.getElementById('user-role-indicator');
+            if(window.currentUserLabel && view !== 'auth') {
+                badge.innerText = window.currentUserLabel.toUpperCase();
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
         }
 
         async function handleLogin() {
             const user = document.getElementById('login-identifier').value.trim();
             const pass = document.getElementById('login-secret').value.trim();
             
+            // 1. LOGIN ADMINISTRADOR (Acceso Total)
             if (user === "josefrank" && pass === "199818") {
                 window.isAdminActive = true;
+                window.currentUserLabel = "Administrador";
+                
+                // Mostrar herramientas de Admin
+                document.getElementById('section-admin-clients').classList.remove('hidden');
+                document.getElementById('section-admin-products').classList.remove('hidden');
+                
                 switchView('admin');
+                if(window.allRedemptions) window.renderRedemptions(window.allRedemptions);
+                return;
+            }
+
+            // 2. LOGIN CAJEROS INDEPENDIENTES (caja 1 marcos, caja 2 jorge, etc.)
+            if (user.toLowerCase().startsWith("caja") && pass === window.SECURITY_KEY) {
+                window.isAdminActive = true; 
+                window.currentUserLabel = user; // Guarda el nombre de la caja ej: "caja 1 2026"
+                
+                // OCULTAR secciones prohibidas para cajeros
+                document.getElementById('section-admin-clients').classList.add('hidden');
+                document.getElementById('section-admin-products').classList.add('hidden');
+                
+                switchView('admin');
+                if(window.allRedemptions) window.renderRedemptions(window.allRedemptions);
                 return;
             }
 
             if(!user || !pass) return alert("Completa los datos");
 
+            // 3. LOGIN CLIENTES
             let client = window.registeredClients.find(c => c.phone === pass);
             if (!client) {
                 const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-                // REGLA: 100 puntos de bienvenida
                 const docRef = await addDoc(collection(window.db, "clients"), { name: user, phone: pass, points: 100 });
                 client = { id: docRef.id, name: user, phone: pass, points: 100 };
-                alert("¡Bienvenido! Te regalamos 100 puntos.");
+                alert("¡Bienvenido! Te regalamos 100 puntos de bienvenida.");
             }
             window.activeClient = client;
+            window.currentUserLabel = "Cliente";
             document.getElementById('client-name').innerText = client.name;
             document.getElementById('client-phone-display').innerText = "Tel: " + client.phone;
             document.getElementById('client-points').innerText = client.points;
+            
+            if(window.allRedemptions) window.renderRedemptions(window.allRedemptions);
             switchView('client');
         }
 
@@ -269,15 +339,40 @@
             p.document.close();
         }
 
-        // RENDERIZADO DE TABLAS
+        // TABLA DE ADMINISTRADOR CON FILTROS INTELIGENTES DE COMPORTAMIENTO
         window.updateClientsTable = () => {
             const tbody = document.getElementById('admin-clients-table');
-            if(!tbody) return;
-            tbody.innerHTML = window.registeredClients.map(c => `
-                <tr class="border-b text-sm">
-                    <td class="py-3"><b>${c.name}</b><br><span class="text-xs text-slate-400">${c.phone}</span></td>
-                    <td class="text-center font-bold text-indigo-600">${c.points}</td>
+            if(!tbody || !window.registeredClients) return;
+            
+            const filterValue = document.getElementById('client-behavior-filter').value;
+            
+            // Pre-calcular cuántos canjes totales tiene cada cliente en la base de datos
+            let clientsWithStats = window.registeredClients.map(c => {
+                const totalCanjes = window.allRedemptions.filter(r => r.clientPhone === c.phone).length;
+                return { ...c, totalCanjes };
+            });
+
+            // Aplicar filtros condicionales
+            if (filterValue === "frecuente") {
+                clientsWithStats = clientsWithStats.filter(c => c.points > 300);
+            } else if (filterValue === "poco_frecuente") {
+                clientsWithStats = clientsWithStats.filter(c => c.points <= 300);
+            } else if (filterValue === "mas_canjes") {
+                // Ordenar de mayor a menor número de premios solicitados
+                clientsWithStats.sort((a, b) => b.totalCanjes - a.totalCanjes);
+            }
+
+            tbody.innerHTML = clientsWithStats.map(c => `
+                <tr class="border-b text-sm hover:bg-slate-50/50">
+                    <td class="py-3">
+                        <b>${c.name}</b><br>
+                        <span class="text-xs text-slate-400">${c.phone}</span>
+                    </td>
+                    <td class="text-center font-bold text-indigo-600">
+                        ${c.points} <span class="text-[10px] text-slate-400 block font-normal">Canjes: ${c.totalCanjes}</span>
+                    </td>
                     <td class="text-right">
+                        <button onclick="viewClientHistory('${c.phone}', '${c.name}')" title="Ver Historial" class="text-indigo-600 px-2"><i class="fa-solid fa-eye"></i></button>
                         <button onclick="openWhatsApp('${c.phone}','${c.name}')" class="text-emerald-600 px-2"><i class="fa-brands fa-whatsapp"></i></button>
                         <button onclick="deleteClient('${c.id}','${c.name}')" class="text-rose-600 px-2"><i class="fa-solid fa-trash"></i></button>
                     </td>
@@ -285,53 +380,88 @@
             `).join('');
         };
 
-        window.renderRedemptions = (list) => {
-            const pending = list.filter(r => r.status === "pendiente");
-            document.getElementById('admin-pending-count').innerText = pending.length;
-            document.getElementById('admin-pending-redemptions').innerHTML = pending.map(r => `
-                <tr class="border-b text-sm"><td class="py-2"><b>${r.productName}</b><br>${r.clientName}</td>
-                <td class="text-right"><button onclick="deliverProduct('${r.id}')" class="bg-emerald-600 text-white px-2 py-1 rounded text-xs">Entregar</button></td></tr>
-            `).join('');
-
-            if(window.activeClient) {
-                const mine = list.filter(r => r.clientPhone === window.activeClient.phone);
-                document.getElementById('client-redemptions-list').innerHTML = mine.map(r => `
-                    <div class="p-2 border rounded ${r.status==='pendiente'?'border-amber-400 bg-amber-50':'bg-slate-100'} mb-2">
-                        <b>${r.productName}</b> - <span class="uppercase font-bold text-[9px]">${r.status}</span>
+        window.viewClientHistory = (phone, name) => {
+            const historySection = document.getElementById('admin-client-history-section');
+            const historyList = document.getElementById('admin-client-history-list');
+            document.getElementById('history-client-title').innerText = `${name} (${phone})`;
+            
+            const history = window.allRedemptions.filter(r => r.clientPhone === phone);
+            
+            if(history.length === 0) {
+                historyList.innerHTML = `<p class="text-slate-400 italic">Este cliente no registra ningún canje.</p>`;
+            } else {
+                // Muestra la información completa incluyendo qué caja lo atendió
+                historyList.innerHTML = history.map(r => `
+                    <div class="flex justify-between items-center p-2 border-b bg-white rounded-md mb-1">
+                        <div>
+                            <span class="font-bold text-slate-800">${r.productName}</span>
+                            <br><span class="text-[10px] text-slate-400">Pedida: ${r.date || 'Sin fecha'}</span>
+                            ${r.status === 'entregado' ? `<br><span class="text-[10px] text-emerald-600 font-medium">Entregado por: ${r.deliveredBy || 'Admin'}</span>` : ''}
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${r.status === 'pendiente' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+                            ${r.status}
+                        </span>
                     </div>
                 `).join('');
+            }
+            historySection.classList.remove('hidden');
+        };
+
+        window.renderRedemptions = (list) => {
+            const pending = list.filter(r => r.status === "pendiente");
+            const adminCountEl = document.getElementById('admin-pending-count');
+            const adminListEl = document.getElementById('admin-pending-redemptions');
+            
+            if(adminCountEl) adminCountEl.innerText = pending.length;
+            if(adminListEl) {
+                adminListEl.innerHTML = pending.map(r => `
+                    <tr class="border-b text-sm">
+                        <td class="py-2"><b>${r.productName}</b><br>${r.clientName} (${r.clientPhone})</td>
+                        <td class="text-right">
+                            <button onclick="deliverProduct('${r.id}')" class="bg-emerald-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold uppercase hover:bg-emerald-700 transition-colors">Entregar</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            const clientListEl = document.getElementById('client-redemptions-list');
+            if(clientListEl && window.activeClient) {
+                const mine = list.filter(r => r.clientPhone === window.activeClient.phone);
+                if(mine.length === 0) {
+                    clientListEl.innerHTML = `<p class="text-slate-400 italic text-center py-4">No tienes canjes solicitados aún.</p>`;
+                } else {
+                    clientListEl.innerHTML = mine.map(r => `
+                        <div class="p-2.5 border rounded-xl flex justify-between items-center ${r.status==='pendiente'?'border-amber-300 bg-amber-50/50':'border-slate-200 bg-slate-100/70'} mb-2">
+                            <div>
+                                <b class="text-slate-900 text-sm">${r.productName}</b>
+                                <div class="text-[10px] text-slate-400">${r.date || ''}</div>
+                                ${r.status === 'entregado' ? `<div class="text-[9px] text-emerald-600">Reclamado en local</div>` : ''}
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${r.status==='pendiente'?'bg-amber-200 text-amber-800':'bg-slate-200 text-slate-600'}">
+                                ${r.status}
+                            </span>
+                        </div>
+                    `).join('');
+                }
             }
         };
 
         window.renderProducts = () => {
             const cont = document.getElementById('client-rewards-container');
             const adm = document.getElementById('admin-products-list');
-            cont.innerHTML = window.availableProducts.map(p => `
-                <div class="p-4 border rounded-xl flex justify-between items-center bg-white">
-                    <div><b>${p.name}</b><br><span class="text-xs text-indigo-500">${p.points} pts</span></div>
-                    <button onclick="redeemProduct('${p.id}', '${p.name}', ${p.points})" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold uppercase">Canjear</button>
-                </div>`).join('');
-            adm.innerHTML = window.availableProducts.map(p => `
-                <div class="flex justify-between py-2 text-sm"><span>${p.name} (${p.points})</span><button onclick="deleteProduct('${p.id}')" class="text-rose-500"><i class="fa-solid fa-trash"></i></button></div>
-            `).join('');
-        };
-
-        // ACCIONES DE CLIENTE
-        async function redeemProduct(prodId, prodName, cost) {
-            if(window.activeClient.points < cost) return alert("Puntos insuficientes");
-            if(confirm(`¿Canjear ${prodName}?`)) {
-                const { addDoc, collection, updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-                await updateDoc(doc(window.db, "clients", window.activeClient.id), { points: window.activeClient.points - cost });
-                await addDoc(collection(window.db, "redemptions"), {
-                    clientName: window.activeClient.name,
-                    clientPhone: window.activeClient.phone,
-                    productName: prodName,
-                    status: "pendiente",
-                    date: new Date().toLocaleString()
-                });
-                alert("¡Canje solicitado!");
+            if(cont) {
+                cont.innerHTML = window.availableProducts.map(p => `
+                    <div class="p-4 border rounded-xl flex justify-between items-center bg-white">
+                        <div><b>${p.name}</b><br><span class="text-xs text-indigo-500">${p.points} pts</span></div>
+                        <button onclick="redeemProduct('${p.id}', '${p.name}', ${p.points})" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold uppercase">Canjear</button>
+                    </div>`).join('');
             }
-        }
+            if(adm) {
+                adm.innerHTML = window.availableProducts.map(p => `
+                    <div class="flex justify-between py-2 text-sm"><span>${p.name} (${p.points} pts)</span><button onclick="deleteProduct('${p.id}')" class="text-rose-500"><i class="fa-solid fa-trash"></i></button></div>
+                `).join('');
+            }
+        };
 
         window.startCameraScanner = () => {
             const r = document.getElementById('qr-reader');
@@ -345,7 +475,6 @@
             });
         };
 
-        // FALLA CORREGIDA: Suma de puntos correcta
         async function claimPoints() {
             const val = document.getElementById('qr-input').value;
             if(!val) return;
@@ -357,7 +486,6 @@
                 const snap = await getDoc(usedRef);
                 if(snap.exists()) return alert("Código ya usado");
 
-                // Buscamos los datos frescos del cliente para asegurar que sumamos sobre lo que ya tiene
                 const clientRef = doc(window.db, "clients", window.activeClient.id);
                 const clientSnap = await getDoc(clientRef);
                 const puntosActuales = clientSnap.data().points;
@@ -372,11 +500,11 @@
 
         window.openWhatsApp = (tel, nom) => {
             const pts = window.registeredClients.find(c => c.phone === tel).points;
-            window.open(`https://wa.me/${tel}?text=Hola ${nom}, tienes ${pts} puntos en Super Toñita.`);
+            window.open(`https://wa.me/${tel}?text=Hola ${nom}, tienes ${pts} puntos acumulados en Super Toñita.`);
         };
 
         window.deleteClient = async (id, name) => {
-            if(prompt(`Escribe ${window.SECURITY_KEY} para borrar a ${name}`) === window.SECURITY_KEY) {
+            if(prompt(`Ecribe la clave ${window.SECURITY_KEY} para borrar permanentemente a ${name}`) === window.SECURITY_KEY) {
                 const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
                 await deleteDoc(doc(window.db, "clients", id));
             }
