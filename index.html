@@ -126,7 +126,7 @@
                         <option value="todos">Mostrar Todos los Clientes</option>
                         <option value="mas_canjes">Clientes con Más Canjes (Top)</option>
                         <option value="frecuente">Clientes Frecuentes (Puntos > 300)</option>
-                        <option value="poco_frecuente">Clientes Poco Frecuentes (Puntos ≤ 300)</option>
+                        <option value="poco_frecuente">Clientes Poco Frecuentes (Puntos ≤ 150)</option>
                     </select>
                 </div>
                 <div class="overflow-x-auto mb-4">
@@ -156,9 +156,9 @@
                 <div id="form-add-product" class="space-y-3 mb-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                         <input type="text" id="new-product-name" placeholder="Nombre de Producto" class="w-full px-3 py-2 border rounded-lg bg-white">
-                        <input type="number" id="new-product-points" placeholder="Puntos que cuesta" class="w-full px-3 py-2 border rounded-lg bg-white">
+                        <input type="number" id="new-product-points" placeholder="Puntos" class="w-full px-3 py-2 border rounded-lg bg-white">
                         <div class="flex flex-col justify-center">
-                            <label class="text-[11px] font-bold text-slate-500 mb-0.5 px-1">Subir Foto Local</label>
+                            <label class="text-[11px] font-bold text-slate-500 mb-0.5 px-1"></label>
                             <input type="file" id="new-product-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-900 file:text-white hover:file:bg-slate-800">
                         </div>
                     </div>
@@ -168,17 +168,17 @@
             </div>
 
             <div id="section-admin-promotions" class="minimal-card p-8">
-                <h3 class="text-xl font-bold text-slate-900 mb-4">Ofertas del Mes (Regalan Puntos Extra)</h3>
+                <h3 class="text-xl font-bold text-slate-900 mb-4">Ofertas del Mes</h3>
                 <div id="form-add-promotion" class="space-y-3 mb-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                         <input type="text" id="new-promo-title" placeholder="Título de la Oferta" class="w-full px-3 py-2 border rounded-lg bg-white">
-                        <input type="number" id="new-promo-points" placeholder="Puntos que REGALA (+pts)" class="w-full px-3 py-2 border rounded-lg bg-white">
+                        <input type="number" id="new-promo-points" placeholder="Puntos " class="w-full px-3 py-2 border rounded-lg bg-white">
                         <div class="flex flex-col justify-center">
                             <label class="text-[11px] font-bold text-slate-500 mb-0.5 px-1">Subir Banner Promo</label>
                             <input type="file" id="new-promo-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700">
                         </div>
                     </div>
-                    <textarea id="new-promo-desc" placeholder="Descripción de la promoción o producto en oferta..." class="w-full px-3 py-2 border rounded-lg resize-none bg-white" rows="2"></textarea>
+                    <textarea id="new-promo-desc" placeholder="Descripción de la promo" class="w-full px-3 py-2 border rounded-lg resize-none bg-white" rows="2"></textarea>
                     <button onclick="addPromotion()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold hover:bg-indigo-700 transition-colors">Agregar Promoción</button>
                 </div>
                 <div id="admin-promotions-list" class="divide-y"></div>
@@ -199,37 +199,34 @@
             appId: "1:840301803243:web:be1612291a7765dab5b0ae"
         };
 
+       // --- INICIALIZACIÓN DE COMPONENTES DE FIREBASE ---
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        window.db = db;
-        window.SECURITY_KEY = "1234"; 
+        window.db = getFirestore(app); // <-- Cambiamos const db por window.db directamente
 
+        // Ahora creamos una variable local "db" para que tus funciones de abajo la encuentren sin cambiarles nada
+        const db = window.db; 
+
+        // Variables globales necesarias inicializadas correctamente
+        window.SECURITY_KEY = "1234"; // Tu PIN de seguridad para borrar datos
         window.allRedemptions = [];
         window.availablePromotions = [];
+        window.availableProducts = [];
+        window.registeredClients = [];
 
-        // Helper para convertir archivos locales a Base64 string
-        const toBase64 = file => new Promise((resolve, reject) => {
-            if (!file) resolve("");
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-        });
-
-        // Listeners en Tiempo Real
+        // --- ESCUCHADORES EN TIEMPO REAL (FALTABAN AQUÍ) ---
         onSnapshot(collection(db, "products"), (s) => {
             window.availableProducts = s.docs.map(d => ({id: d.id, ...d.data()}));
-            window.renderProducts();
+            if(window.renderProducts) window.renderProducts();
         });
 
         onSnapshot(collection(db, "promotions"), (s) => {
             window.availablePromotions = s.docs.map(d => ({id: d.id, ...d.data()}));
-            window.renderPromotions();
+            if(window.renderPromotions) window.renderPromotions();
         });
 
         onSnapshot(collection(db, "clients"), (s) => {
             window.registeredClients = s.docs.map(d => ({id: d.id, ...d.data()}));
-            window.updateClientsTable();
+            if(window.updateClientsTable) window.updateClientsTable();
             if(window.activeClient) {
                 const updated = window.registeredClients.find(c => c.phone === window.activeClient.phone);
                 if(updated) {
@@ -241,144 +238,11 @@
 
         onSnapshot(collection(db, "redemptions"), (s) => {
             window.allRedemptions = s.docs.map(d => ({id: d.id, ...d.data()}));
-            window.renderRedemptions(window.allRedemptions);
-            window.updateClientsTable(); 
+            if(window.renderRedemptions) window.renderRedemptions(window.allRedemptions);
+            if(window.updateClientsTable) window.updateClientsTable(); 
         });
 
-        // Métodos de Productos (Premios con Foto Local)
-        window.addProduct = async () => {
-            if (window.currentUserLabel.toLowerCase().startsWith("caja")) return alert("Acción denegada por seguridad.");
-            const n = document.getElementById('new-product-name').value.trim();
-            const p = parseInt(document.getElementById('new-product-points').value);
-            const fileInput = document.getElementById('new-product-file');
-            
-            if(n && p) {
-                let imgBase64 = "";
-                if(fileInput.files.length > 0) {
-                    imgBase64 = await toBase64(fileInput.files[0]);
-                }
-                await addDoc(collection(db, "products"), { name: n, points: p, image: imgBase64 });
-                document.getElementById('new-product-name').value = '';
-                document.getElementById('new-product-points').value = '';
-                fileInput.value = '';
-            } else {
-                alert("Completa el nombre y puntos del premio.");
-            }
-        };
-
-        window.deleteProduct = async (id) => {
-            if (window.currentUserLabel.toLowerCase().startsWith("caja")) return alert("Acción denegada por seguridad.");
-            if(confirm("¿Eliminar producto?")) await deleteDoc(doc(db, "products", id));
-        };
-
-        // Métions de Promociones (Regalan Puntos con Foto Local)
-        window.addPromotion = async () => {
-            if (window.currentUserLabel.toLowerCase().startsWith("caja")) return alert("Acción denegada por seguridad.");
-            const t = document.getElementById('new-promo-title').value.trim();
-            const d = document.getElementById('new-promo-desc').value.trim();
-            const pts = parseInt(document.getElementById('new-promo-points').value) || 0;
-            const fileInput = document.getElementById('new-promo-file');
-            
-            if(t && d) {
-                let imgBase64 = "";
-                if(fileInput.files.length > 0) {
-                    imgBase64 = await toBase64(fileInput.files[0]);
-                }
-                await addDoc(collection(db, "promotions"), { title: t, description: d, points: pts, image: imgBase64 });
-                document.getElementById('new-promo-title').value = '';
-                document.getElementById('new-promo-desc').value = '';
-                document.getElementById('new-promo-points').value = '';
-                fileInput.value = '';
-            } else {
-                alert("Completa el título y la descripción.");
-            }
-        };
-
-        window.deletePromotion = async (id) => {
-            if (window.currentUserLabel.toLowerCase().startsWith("caja")) return alert("Acción denegada por seguridad.");
-            if(confirm("¿Eliminar esta promoción?")) await deleteDoc(doc(db, "promotions", id));
-        };
-
-        // Adquirir Puntos al reclamar/comprar Promoción
-        window.buyPromotion = async (promoId, promoTitle, pointsReward) => {
-            if(confirm(`¿Deseas activar la promoción "${promoTitle}" para sumar +${pointsReward} puntos a tu cuenta?`)) {
-                // Sumar puntos en caliente al cliente
-                const newPoints = window.activeClient.points + pointsReward;
-                await updateDoc(doc(db, "clients", window.activeClient.id), { points: newPoints });
-                
-                // Dejar constancia en la colección redemptions mapeado como tipo "promocion"
-                await addDoc(collection(db, "redemptions"), {
-                    clientName: window.activeClient.name,
-                    clientPhone: window.activeClient.phone,
-                    productName: `PROMO: ${promoTitle}`,
-                    status: "comprado", // Estatus directo para promos adquiridas
-                    pointsTransacted: pointsReward, // Guardamos cuántos puntos se movieron para poder restarlos si se cancela
-                    date: new Date().toLocaleString(),
-                    deliveredBy: "Autoservicio App"
-                });
-                alert(`¡Promoción añadida con éxito! Se te han abonado +${pointsReward} puntos.`);
-            }
-        };
-
-        // Cancelar Compra de Promoción y RESTAR los puntos automáticamente
-        window.cancelPromotionBuy = async (redemptionId, clientPhone, pointsToDeduct, promoName) => {
-            if(confirm(`¿Deseas devolver/cancelar "${promoName}"? Se te restarán los ${pointsToDeduct} puntos otorgados.`)) {
-                
-                // Buscar la cuenta del cliente real actual de la lista maestra
-                const currentClient = window.registeredClients.find(c => c.phone === clientPhone);
-                if(!currentClient) return alert("Error al localizar la cuenta del usuario.");
-
-                if(currentClient.points < pointsToDeduct) {
-                    return alert("No puedes cancelar esta promoción porque ya gastaste los puntos obtenidos y tu saldo quedaría en negativo.");
-                }
-
-                // Restar puntos del saldo
-                await updateDoc(doc(db, "clients", currentClient.id), { points: currentClient.points - pointsToDeduct });
-                
-                // Actualizar el estado del ticket en la base de datos a "cancelado"
-                await updateDoc(doc(db, "redemptions", redemptionId), { 
-                    status: "cancelado",
-                    date: new Date().toLocaleString() + " (Devolución)"
-                });
-
-                alert("Promoción cancelada. Puntos descontados de tu saldo.");
-            }
-        };
-
-        window.deliverProduct = async (id) => {
-            if(confirm("¿Confirmas la entrega física de este premio?")) {
-                const deliveredBy = window.currentUserLabel || "Caja General";
-                await updateDoc(doc(db, "redemptions", id), { 
-                    status: "entregado",
-                    deliveredBy: deliveredBy,
-                    deliveryDate: new Date().toLocaleString()
-                });
-            }
-        };
-
-        window.redeemProduct = async (prodId, prodName, cost) => {
-            if(window.activeClient.points < cost) return alert("Puntos insuficientes");
-            if(confirm(`¿Canjear ${prodName}?`)) {
-                await updateDoc(doc(db, "clients", window.activeClient.id), { points: window.activeClient.points - cost });
-                await addDoc(collection(db, "redemptions"), {
-                    clientName: window.activeClient.name,
-                    clientPhone: window.activeClient.phone,
-                    productName: prodName,
-                    status: "pendiente", // Queda pendiente en caja
-                    pointsTransacted: cost,
-                    date: new Date().toLocaleString(),
-                    deliveredBy: "" 
-                });
-                alert("¡Canje solicitado!");
-            }
-        };
-    </script>
-
-    <script>
-        window.activeClient = null;
-        window.isAdminActive = false;
-        window.currentUserLabel = ""; 
-
+        // --- SISTEMA DE NAVEGACIÓN Y VISTAS ---
         function switchView(view) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.getElementById(view + '-view').classList.remove('hidden');
@@ -395,7 +259,9 @@
                 badge.classList.add('hidden');
             }
         }
+        window.switchView = switchView;
 
+        // --- AUTENTICACIÓN Y ROLES (ADMIN, CAJA, CLIENTE) ---
         async function handleLogin() {
             const user = document.getElementById('login-identifier').value.trim();
             const pass = document.getElementById('login-secret').value.trim();
@@ -416,7 +282,7 @@
                 return;
             }
 
-            // 2. LOGIN CAJEROS INDEPENDIENTES (Seguridad Absoluta)
+            // 2. LOGIN CAJEROS INDEPENDIENTES (Seguridad Restringida)
             if (user.toLowerCase().startsWith("caja") && pass === window.SECURITY_KEY) {
                 window.isAdminActive = true; 
                 window.currentUserLabel = user; 
@@ -436,8 +302,7 @@
             // 3. LOGIN CLIENTES
             let client = window.registeredClients.find(c => c.phone === pass);
             if (!client) {
-                const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-                const docRef = await addDoc(collection(window.db, "clients"), { name: user, phone: pass, points: 100 });
+                const docRef = await addDoc(collection(db, "clients"), { name: user, phone: pass, points: 100 });
                 client = { id: docRef.id, name: user, phone: pass, points: 100 };
                 alert("¡Bienvenido! Te regalamos 100 puntos de bienvenida.");
             }
@@ -451,9 +316,147 @@
             if(window.renderPromotions) window.renderPromotions();
             switchView('client');
         }
+        window.handleLogin = handleLogin;
 
         function logout() { location.reload(); }
+        window.logout = logout;
 
+        // --- CONTROL DE PROMOCIONES (CREACIÓN, TOGGLE Y ELIMINACIÓN) ---
+        window.addPromotion = async () => {
+            if (window.currentUserLabel.toLowerCase().startsWith("caja")) return alert("Acción denegada por seguridad.");
+            const t = document.getElementById('new-promo-title').value.trim();
+            const d = document.getElementById('new-promo-desc').value.trim();
+            const pts = parseInt(document.getElementById('new-promo-points').value) || 0;
+            const fileInput = document.getElementById('new-promo-file');
+            
+            if(t && d) {
+                let imgBase64 = fileInput.files.length > 0 ? await toBase64(fileInput.files[0]) : "";
+                await addDoc(collection(db, "promotions"), { 
+                    title: t, description: d, points: pts, image: imgBase64, activo: true 
+                });
+                document.getElementById('new-promo-title').value = '';
+                document.getElementById('new-promo-desc').value = '';
+                document.getElementById('new-promo-points').value = '';
+                fileInput.value = '';
+                alert("Promoción creada exitosamente.");
+            } else { alert("Completa el título y la descripción."); }
+        };
+
+        window.togglePromotion = async (id, estadoActual) => {
+            if (window.currentUserLabel.toLowerCase().startsWith("caja")) return alert("Acción denegada por seguridad.");
+            const nuevoEstado = !estadoActual;
+            await updateDoc(doc(db, "promotions", id), { activo: nuevoEstado });
+        };
+
+        window.deletePromotion = async (id) => {
+            if (window.currentUserLabel.toLowerCase().startsWith("caja")) return alert("Acción denegada por seguridad.");
+            if(confirm("¿Deseas eliminar permanentemente esta promoción?")) {
+                await deleteDoc(doc(db, "promotions", id));
+            }
+        };
+
+        window.buyPromotion = async (promoId, promoTitle, pointsReward) => {
+    const p = window.availablePromotions.find(x => x.id === promoId);
+    if (!p || p.activo === false) return alert("Esta promoción ya no está disponible.");
+
+    if(confirm(`¿Solicitar la promoción "${promoTitle}"? Una vez validada por caja, recibirás +${pointsReward} puntos.`)) {
+        await addDoc(collection(db, "redemptions"), {
+            clientName: window.activeClient.name,
+            clientPhone: window.activeClient.phone,
+            productName: `PROMO: ${promoTitle}`,
+            status: "pendiente", 
+            pointsTransacted: pointsReward, 
+            date: new Date().toLocaleString(),
+            type: "promocion" // Identificador nuevo
+        });
+        alert("Solicitud enviada. El cajero la activará al validar tu compra.");
+    }
+};
+
+        window.cancelPromotionBuy = async (redemptionId, clientPhone, pointsToDeduct, promoName) => {
+            if(confirm(`¿Deseas devolver/cancelar "${promoName}"? Se te restarán los ${pointsToDeduct} puntos otorgados.`)) {
+                const currentClient = window.registeredClients.find(c => c.phone === clientPhone);
+                if(!currentClient) return alert("Error al localizar la cuenta del usuario.");
+
+                if(currentClient.points < pointsToDeduct) {
+                    return alert("No puedes cancelar esta promoción porque ya gastaste los puntos obtenidos y tu saldo quedaría en negativo.");
+                }
+
+                await updateDoc(doc(db, "clients", currentClient.id), { points: currentClient.points - pointsToDeduct });
+                await updateDoc(doc(db, "redemptions", redemptionId), { 
+                    status: "cancelado",
+                    date: new Date().toLocaleString() + " (Devolución)"
+                });
+
+                alert("Promoción cancelada. Puntos descontados de tu saldo.");
+            }
+        };
+
+        // --- CONTROL DE PREMIOS Y PRODUCTOS ---
+        window.addProduct = async () => {
+            if (window.currentUserLabel.toLowerCase().startsWith("caja")) return alert("Acción denegada por seguridad.");
+            const n = document.getElementById('new-product-name').value.trim();
+            const p = parseInt(document.getElementById('new-product-points').value) || 0;
+            const fileInput = document.getElementById('new-product-file');
+
+            if(n && p > 0) {
+                let imgBase64 = fileInput.files.length > 0 ? await toBase64(fileInput.files[0]) : "";
+                await addDoc(collection(db, "products"), { name: n, points: p, image: imgBase64 });
+                document.getElementById('new-product-name').value = '';
+                document.getElementById('new-product-points').value = '';
+                fileInput.value = '';
+                alert("Premio añadido correctamente.");
+            } else { alert("Completa el nombre y puntos del premio."); }
+        };
+
+        window.deleteProduct = async (id) => {
+            if (window.currentUserLabel.toLowerCase().startsWith("caja")) return alert("Acción denegada por seguridad.");
+            if(confirm("¿Eliminar este premio permanentemente?")) {
+                await deleteDoc(doc(db, "products", id));
+            }
+        };
+
+        window.deliverProduct = async (id, clientPhone, pointsReward, type) => {
+    if(confirm("¿Confirmas la entrega y la acreditación de puntos?")) {
+        const deliveredBy = window.currentUserLabel || "Caja General";
+        
+        // 1. Actualizar estado del canje
+        await updateDoc(doc(db, "redemptions", id), { 
+            status: "entregado",
+            deliveredBy: deliveredBy,
+            deliveryDate: new Date().toLocaleString()
+        });
+
+        // 2. Si es una promoción, sumamos los puntos al cliente
+        if(type === "promocion") {
+            const client = window.registeredClients.find(c => c.phone === clientPhone);
+            if(client) {
+                await updateDoc(doc(db, "clients", client.id), { 
+                    points: client.points + pointsReward 
+                });
+            }
+        }
+        alert("Entrega confirmada y puntos acreditados.");
+    }
+};
+        window.redeemProduct = async (prodId, prodName, cost) => {
+            if(window.activeClient.points < cost) return alert("Puntos insuficientes");
+            if(confirm(`¿Canjear ${prodName}?`)) {
+                await updateDoc(doc(db, "clients", window.activeClient.id), { points: window.activeClient.points - cost });
+                await addDoc(collection(db, "redemptions"), {
+                    clientName: window.activeClient.name,
+                    clientPhone: window.activeClient.phone,
+                    productName: prodName,
+                    status: "pendiente", 
+                    pointsTransacted: cost,
+                    date: new Date().toLocaleString(),
+                    deliveredBy: "" 
+                });
+                alert("¡Canje solicitado!");
+            }
+        };
+
+        // --- CÓDIGOS QR DE FACTURACIÓN ---
         function generateQRCodes() {
             const amt = parseFloat(document.getElementById('qr-bill-amount').value);
             if(!amt || amt <= 0) return alert("Monto inválido");
@@ -465,6 +468,7 @@
             new QRCode(document.getElementById('qr-points-container'), { text: JSON.stringify({pts, id: uid}), width: 150, height: 150 });
             document.getElementById('qr-points-label').innerText = pts + " Puntos (ID: " + uid + ")";
         }
+        window.generateQRCodes = generateQRCodes;
 
         function printQRCodes() {
             const link = document.getElementById('qr-link-container').innerHTML;
@@ -474,7 +478,9 @@
             p.document.write(`<html><body onload="window.print();window.close();" style="text-align:center;font-family:monospace;"><h3>SUPER TOÑITA</h3><hr><p>APP</p>${link}<hr><p>PUNTOS</p>${ptsQR}<p>${document.getElementById('qr-points-label').innerText}</p></body></html>`);
             p.document.close();
         }
+        window.printQRCodes = printQRCodes;
 
+        // --- RENDERIZADO DE TABLAS Y COMPONENTES UI ---
         window.updateClientsTable = () => {
             const tbody = document.getElementById('admin-clients-table');
             if(!tbody || !window.registeredClients) return;
@@ -545,15 +551,16 @@
             
             if(adminCountEl) adminCountEl.innerText = pending.length;
             if(adminListEl) {
-                adminListEl.innerHTML = pending.map(r => `
-                    <tr class="border-b text-sm">
-                        <td class="py-2"><b>${r.productName}</b><br>${r.clientName} (${r.clientPhone})</td>
-                        <td class="text-right">
-                            <button onclick="deliverProduct('${r.id}')" class="bg-emerald-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold uppercase hover:bg-emerald-700 transition-colors">Entregar</button>
-                        </td>
-                    </tr>
-                `).join('');
-            }
+               // Dentro de la función renderRedemptions, en la parte de adminListEl:
+adminListEl.innerHTML = pending.map(r => `
+    <tr class="border-b text-sm">
+        <td class="py-2"><b>${r.productName}</b><br>${r.clientName} (${r.clientPhone})</td>
+        <td class="text-right">
+            <button onclick="deliverProduct('${r.id}', '${r.clientPhone}', ${r.pointsTransacted || 0}, '${r.type || 'normal'}')" 
+            class="bg-emerald-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-emerald-700">Entregar</button>
+        </td>
+    </tr>
+`).join('');}
 
             const clientListEl = document.getElementById('client-redemptions-list');
             if(clientListEl && window.activeClient) {
@@ -567,7 +574,6 @@
                         if(r.status === 'comprado') badgeColors = 'bg-indigo-100 text-indigo-800';
                         if(r.status === 'cancelado') badgeColors = 'bg-rose-100 text-rose-800';
 
-                        // Si es una promoción adquirida ("comprado"), habilitar el botón dinámico para revertirla (cancelar)
                         const actionButton = r.status === 'comprado' 
                             ? `<button onclick="cancelPromotionBuy('${r.id}', '${r.clientPhone}', ${r.pointsTransacted}, '${r.productName}')" class="mt-1 block text-[10px] font-bold text-rose-600 underline hover:text-rose-800">Devolver Promo (Restar pts)</button>` 
                             : '';
@@ -589,7 +595,6 @@
             }
         };
 
-        // Renderizado de Premios (Con lectura de String Base64 Local)
         window.renderProducts = () => {
             const cont = document.getElementById('client-rewards-container');
             const adm = document.getElementById('admin-products-list');
@@ -619,23 +624,26 @@
                 adm.innerHTML = window.availableProducts.map(p => `
                     <div class="flex justify-between items-center py-2 text-sm gap-2">
                         <span class="font-medium">${p.name} <span class="text-xs text-indigo-600 font-bold">(${p.points} pts)</span></span>
-                        ${isCaja ? '' : `<button onclick="deleteProduct('${p.id}')" class="text-rose-500 hover:text-rose-700 px-2 py-1"><i class="fa-solid fa-trash"></i></button>`}
-                    </div>
+                    // Asegúrate de que este bloque esté dentro de tu renderPromotions:
+${isCaja ? '' : `<button onclick="deletePromotion('${promo.id}')" class="text-rose-500 hover:text-rose-700 px-2 py-1"><i class="fa-solid fa-trash"></i></button>`}
+                        </div>
                 `).join('');
             }
         };
 
-        // Renderizado de Promociones con Puntos Sumables
         window.renderPromotions = () => {
             const clientContainer = document.getElementById('client-promotions-container');
             const adminContainer = document.getElementById('admin-promotions-list');
             const isCaja = window.currentUserLabel.toLowerCase().startsWith("caja");
 
-            if(clientContainer) {
-                if(window.availablePromotions.length === 0) {
+            if(clientContainer && window.availablePromotions) {
+                // Filtrar solo las ofertas que NO estén explícitamente desactivadas
+                const activas = window.availablePromotions.filter(promo => promo.activo !== false);
+
+                if(activas.length === 0) {
                     clientContainer.innerHTML = `<p class="text-xs text-slate-400 italic col-span-full py-2">No hay promociones activas este mes.</p>`;
                 } else {
-                    clientContainer.innerHTML = window.availablePromotions.map(promo => {
+                    clientContainer.innerHTML = activas.map(promo => {
                         const imgHTML = promo.image 
                             ? `<img src="${promo.image}" class="w-20 h-20 object-cover rounded-xl border flex-shrink-0" alt="Promo">`
                             : `<div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-fire text-xl"></i></div>`;
@@ -656,19 +664,30 @@
                 }
             }
 
-            if(adminContainer) {
-                adminContainer.innerHTML = window.availablePromotions.map(promo => `
-                    <div class="flex justify-between items-center py-2.5 text-sm gap-4">
+            if(adminContainer && window.availablePromotions) {
+                adminContainer.innerHTML = window.availablePromotions.map(promo => {
+                    const isPromoActiva = promo.activo !== false;
+                    const toggleTexto = isPromoActiva ? "Desactivar" : "Activar";
+                    const btnColorClass = isPromoActiva ? "text-rose-500 hover:text-rose-700" : "text-emerald-600 hover:text-emerald-800";
+
+                    return `
+                    <div class="flex justify-between items-center py-2.5 text-sm gap-4 border-b border-slate-100">
                         <div class="min-w-0">
-                            <b class="text-slate-800 block truncate">${promo.title} <span class="text-emerald-600 text-xs">(+${promo.points || 0} pts)</span></b>
+                            <b class="${isPromoActiva ? 'text-slate-800' : 'text-slate-400 line-through'} block truncate">${promo.title} <span class="text-emerald-600 text-xs">(+${promo.points || 0} pts)</span></b>
                             <span class="text-xs text-slate-400 line-clamp-1">${promo.description}</span>
                         </div>
-                        ${isCaja ? '' : `<button onclick="deletePromotion('${promo.id}')" class="text-rose-500 hover:text-rose-700 px-2 py-1"><i class="fa-solid fa-trash"></i></button>`}
-                    </div>
-                `).join('');
+                        <div class="flex items-center gap-3 flex-shrink-0">
+                            <button onclick="togglePromotion('${promo.id}', ${isPromoActiva})" class="text-xs font-bold uppercase tracking-wider ${btnColorClass}">
+                                ${toggleTexto}
+                            </button>
+                            ${isCaja ? '' : `<button onclick="deletePromotion('${promo.id}')" class="text-rose-500 hover:text-rose-700 px-2 py-1"><i class="fa-solid fa-trash"></i></button>`}
+                        </div>
+                    </div>`;
+                }).join('');
             }
         };
 
+        // --- ESCÁNER DE CÁMARA QR Y RECLAMO DE PUNTOS ---
         window.startCameraScanner = () => {
             const r = document.getElementById('qr-reader');
             r.classList.remove('hidden');
@@ -686,13 +705,11 @@
             if(!val) return;
             try {
                 const data = JSON.parse(val);
-                const { doc, getDoc, setDoc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-                
-                const usedRef = doc(window.db, "used_codes", data.id);
+                const usedRef = doc(db, "used_codes", data.id);
                 const snap = await getDoc(usedRef);
                 if(snap.exists()) return alert("Código ya usado");
 
-                const clientRef = doc(window.db, "clients", window.activeClient.id);
+                const clientRef = doc(db, "clients", window.activeClient.id);
                 const clientSnap = await getDoc(clientRef);
                 const puntosActuales = clientSnap.data().points;
 
@@ -704,6 +721,7 @@
             } catch(e) { alert("QR inválido"); }
         }
 
+        // --- SISTEMAS DE COMUNICACIÓN Y BORRADO SEGURO ---
         window.openWhatsApp = (tel, nom) => {
             const pts = window.registeredClients.find(c => c.phone === tel).points;
             window.open(`https://wa.me/${tel}?text=Hola ${nom}, tienes ${pts} puntos acumulados en Super Toñita.`);
@@ -712,8 +730,8 @@
         window.deleteClient = async (id, name) => {
             if (window.currentUserLabel.toLowerCase().startsWith("caja")) return alert("Acción denegada por seguridad.");
             if(prompt(`Escribe la clave ${window.SECURITY_KEY} para borrar permanentemente a ${name}`) === window.SECURITY_KEY) {
-                const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-                await deleteDoc(doc(window.db, "clients", id));
+                await deleteDoc(doc(db, "clients", id));
+                alert("Cliente eliminado.");
             }
         };
     </script>
