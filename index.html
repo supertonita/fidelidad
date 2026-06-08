@@ -123,7 +123,11 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <h3 class="text-xl font-bold text-slate-900">Control de Clientes</h3>
                     <select id="client-behavior-filter" onchange="window.updateClientsTable()" class="px-3 py-2 border border-slate-200 rounded-xl bg-white text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="todos">Mostrar Todos los Clientes</option>
+                       // Busca este botón dentro de window.updateClientsTable y reemplázalo:
+<button onclick="addPointsManually('${c.id}', '${c.name}', '${c.phone}')" title="Sumar Puntos" class="text-amber-600 px-2">
+    <i class="fa-solid fa-plus-circle"></i>
+</button> 
+                      <option value="todos">Mostrar Todos los Clientes</option>
                         <option value="mas_canjes">Clientes con Más Canjes (Top)</option>
                         <option value="frecuente">Clientes Frecuentes (Puntos > 300)</option>
                         <option value="poco_frecuente">Clientes Poco Frecuentes (Puntos ≤ 150)</option>
@@ -775,6 +779,37 @@ window.renderProducts = () => {
                 await deleteDoc(doc(db, "clients", id));
                 alert("Cliente eliminado.");
             }
+            window.addPointsManually = async (clientId, clientName, clientPhone) => {
+            const amount = prompt(`¿Cuántos puntos deseas sumar a ${clientName}?`);
+            const pointsToAdd = parseInt(amount);
+
+            if (isNaN(pointsToAdd) || pointsToAdd <= 0) return alert("Cantidad inválida.");
+
+            if (confirm(`¿Confirmas sumar ${pointsToAdd} puntos a ${clientName}?`)) {
+                try {
+                    // 1. Sumar puntos al cliente
+                    const clientRef = doc(db, "clients", clientId);
+                    const client = window.registeredClients.find(c => c.id === clientId);
+                    await updateDoc(clientRef, { points: (client.points || 0) + pointsToAdd });
+                    
+                    // 2. Registrar en el historial como "Ajuste Manual"
+                    await addDoc(collection(db, "redemptions"), {
+                        clientName: clientName,
+                        clientPhone: clientPhone,
+                        productName: "Ajuste Manual de Puntos",
+                        status: "entregado", // Aparecerá como entregado para que el cliente lo vea como finalizado
+                        pointsTransacted: pointsToAdd,
+                        date: new Date().toLocaleString(),
+                        type: "ajuste",
+                        deliveredBy: window.currentUserLabel || "Admin"
+                    });
+
+                    alert("Puntos sumados y registrados en el historial.");
+                } catch (e) {
+                    alert("Error al procesar: " + e.message);
+                }
+            }
+        };
         };
     </script>
 </body>
